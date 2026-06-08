@@ -1,0 +1,41 @@
+# Debbie Dessert
+
+Bilingual Next.js website for vegetarian Basque cheesecake ordering, scheduled mandala class bookings, and owner operations.
+
+## Run locally
+
+```bash
+npm install
+npm run dev
+```
+
+The application uses seeded demo data when Supabase environment variables are absent.
+
+## Supabase
+
+1. Create a Supabase project.
+2. Copy `.env.example` to `.env.local` and add the project URL and publishable key.
+3. Apply `supabase/migrations/20260607000000_initial_schema.sql`.
+4. Apply `supabase/seed.sql` for sample catalogue and availability data.
+5. Create the owner through Supabase Auth and insert their user ID into `public.staff_roles` with role `owner`.
+6. Schedule `select public.expire_cake_holds();` to run every minute using Supabase Cron.
+
+All exposed tables use RLS. Public mutations are limited to the two atomic reservation functions.
+
+## Payments and email
+
+Cake checkout uses a provider-neutral boundary. Implement a Stripe or Square adapter that:
+
+- Creates hosted checkout from the server after `reserve_cake_order`.
+- Stores the provider reference in `payments`.
+- Verifies webhook signatures in `/api/payments/webhook`.
+- Inserts the unique provider event before confirming the order.
+- Marks the capacity hold confirmed only after verified payment.
+
+Class bookings require no advance payment. The owner records cash, card, or bank transfer after attendance.
+
+Email delivery should consume `notification_outbox` records with idempotent retries.
+
+## Deployment
+
+Deploy the repository to Vercel and configure the values from `.env.example` in the project settings. The site is configured for `Australia/Brisbane` and AUD.

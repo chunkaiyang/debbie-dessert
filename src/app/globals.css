@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+:root {
+  --porcelain: #fff9f3;
+  --blush: #e8cec1;
+  --cocoa: #4b3022;
+  --forest: #1f513d;
+  --sage: #8c9b7f;
+  --caramel: #a56d35;
+  --cream: #f7eee5;
+  --white: #ffffff;
+  --error: #a63d40;
+}
+
+@theme inline {
+  --color-porcelain: var(--porcelain);
+  --color-blush: var(--blush);
+  --color-cocoa: var(--cocoa);
+  --color-forest: var(--forest);
+  --color-sage: var(--sage);
+  --color-caramel: var(--caramel);
+  --font-sans: "Noto Sans TC", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", "Noto Serif TC", ui-serif, Georgia, serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--porcelain);
+  color: var(--cocoa);
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", ui-sans-serif, system-ui, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+}
+
+.display {
+  font-family: "Cormorant Garamond", "Noto Serif TC", "Songti TC", Georgia, serif;
+}
+
+.container-shell {
+  width: min(1180px, calc(100% - 40px));
+  margin-inline: auto;
+}
+
+.section-pad {
+  padding-block: clamp(72px, 9vw, 128px);
+}
+
+.focus-ring:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--caramel), white 20%);
+  outline-offset: 3px;
+}
+
+.mandala-dots {
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--caramel), transparent 58%) 1.2px, transparent 1.2px);
+  background-size: 18px 18px;
+}
+
+.paper {
+  background:
+    linear-gradient(rgba(255, 249, 243, 0.92), rgba(255, 249, 243, 0.92)),
+    url("/assets/mandala.jpg") center / cover;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .container-shell {
+    width: min(100% - 28px, 1180px);
+  }
+}
