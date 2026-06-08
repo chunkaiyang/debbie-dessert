@@ -6,13 +6,13 @@ import { Header } from "./header";
 
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAdmin = pathname.startsWith("/admin");
+  const usesCustomChrome = pathname === "/" || pathname.startsWith("/admin");
 
   return (
     <>
-      {isAdmin ? null : <Header />}
+      {usesCustomChrome ? null : <Header />}
       <main>{children}</main>
-      {isAdmin ? null : <Footer />}
+      {usesCustomChrome ? null : <Footer />}
     </>
   );
 }

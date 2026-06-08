@@ -2,133 +2,481 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Leaf, Palette, ShoppingBag } from "lucide-react";
-import { SectionHeading } from "@/components/section-heading";
+import {
+  CalendarDays,
+  CakeSlice,
+  Camera,
+  ChevronRight,
+  Clock,
+  Heart,
+  Leaf,
+  Mail,
+  MapPin,
+  Palette,
+  Users,
+} from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
-import { cakeDates, products } from "@/lib/site-data";
+import { classSessions, products } from "@/lib/site-data";
+
+const navItems = [
+  { href: "/", en: "Home", zh: "首頁" },
+  { href: "/cakes", en: "Cakes", zh: "蛋糕訂購" },
+  { href: "/classes", en: "Mandala Classes", zh: "曼陀羅繪畫課程" },
+  { href: "/about", en: "About", zh: "關於我" },
+  { href: "/faq", en: "FAQ", zh: "常見問題" },
+];
+
+const flavourDetails = [
+  {
+    id: "original",
+    script: "Original",
+    image: "/assets/original-card-crop.png",
+    imagePosition: "50% 50%",
+    notes: [
+      ["Creamy", "濃郁奶香"],
+      ["Rich & smooth", "綿密細緻"],
+      ["Pure comfort", "幸福首選"],
+    ],
+  },
+  {
+    id: "chocolate",
+    script: "Chocolate",
+    image: "/assets/chocolate-card-crop.png",
+    imagePosition: "50% 50%",
+    notes: [
+      ["Chocolatey", "香濃可可"],
+      ["Balanced", "微苦不膩"],
+      ["Deep flavour", "層次豐富"],
+    ],
+  },
+  {
+    id: "taro",
+    script: "Taro",
+    image: "/assets/taro-card-crop.png",
+    imagePosition: "50% 50%",
+    notes: [
+      ["Taro", "大甲芋頭"],
+      ["Two layers", "雙層享受"],
+      ["Natural", "天然食材"],
+    ],
+  },
+];
+
+const availabilityCards = [
+  { day: "Sat", date: "20", month: "Jun", locations: "3 locations", zh: "多個取貨地點", remaining: 8, capacity: 20, soldOut: false },
+  { day: "Sat", date: "27", month: "Jun", locations: "2 locations", zh: "多個取貨地點", remaining: 12, capacity: 20, soldOut: false },
+  { day: "Sun", date: "5", month: "Jul", locations: "2 locations", zh: "多個取貨地點", remaining: 16, capacity: 20, soldOut: false },
+  { day: "Sun", date: "12", month: "Jul", locations: "2 locations", zh: "多個取貨地點", remaining: 0, capacity: 20, soldOut: true },
+];
+
+const values = [
+  { icon: Leaf, title: "Natural & Vegetarian", zh: "天然素食", body: "Made with simple, wholesome ingredients.", bodyZh: "選用天然食材，簡單純粹。" },
+  { icon: CakeSlice, title: "Handcrafted with Care", zh: "用心手作", body: "Every cake and class is made with intention.", bodyZh: "每一份甜品與課程，都是用心完成。" },
+  { icon: Heart, title: "For Your Moments", zh: "療癒時刻", body: "Celebrate, connect, and be present.", bodyZh: "為慶祝、相聚或靜心時刻而生。" },
+  { icon: Palette, title: "Create & Restore", zh: "創作與放鬆", body: "Slow down and create from within.", bodyZh: "放慢腳步，由內而外創作。" },
+];
+
+const faqs = [
+  "How do I order a cake?",
+  "Pickup, storage and best enjoyed",
+  "Allergens and dietary information",
+  "Class details and what to bring",
+];
 
 export default function HomePage() {
-  const { language, t } = useLanguage();
   return (
-    <>
-      <section className="overflow-hidden">
-        <div className="container-shell grid min-h-[760px] items-center gap-12 py-16 lg:grid-cols-[0.9fr_1.1fr] lg:py-24">
-          <div className="relative z-10">
-            <h1 className="display max-w-2xl text-6xl leading-[0.92] font-semibold tracking-[-0.03em] md:text-8xl">
-              Healing through dessert
-            </h1>
-            <p className="mt-5 font-serif text-2xl text-caramel md:text-3xl">以甜品療癒日常</p>
-            <p className="mt-7 max-w-xl text-lg leading-8 text-cocoa/70">
-              {language === "en"
-                ? "Natural vegetarian Basque cheesecake and mindful mandala classes, handcrafted in small batches around the days Debbie is available."
-                : "以天然食材、小批量手作的素食巴斯克乳酪蛋糕，與靜心曼陀羅課程，陪伴每一個需要慢下來的日常。"}
-            </p>
-            <div className="mt-9 flex flex-wrap gap-3">
-              <Link href="/cakes" className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-full bg-forest px-6 py-3 font-semibold text-white hover:bg-cocoa">
-                <ShoppingBag size={18} /> {language === "en" ? "Order a cake" : "訂購蛋糕"}
-              </Link>
-              <Link href="/classes" className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-full border border-cocoa/30 px-6 py-3 font-semibold hover:bg-blush/40">
-                <Palette size={18} /> {language === "en" ? "Book a class" : "預約課程"}
-              </Link>
-            </div>
-          </div>
-          <div className="relative min-h-[540px]">
-            <div className="absolute inset-y-0 right-0 w-[82%] overflow-hidden rounded-[48%_48%_20%_20%] bg-blush">
-              <Image src="/assets/694685329_27727454103509648_3353211077646939741_n.jpg" alt="Handcrafted Basque cheesecakes in a gift box" fill sizes="(max-width: 1024px) 82vw, 46vw" className="object-cover" priority />
-            </div>
-            <div className="mandala-dots absolute bottom-4 left-0 h-44 w-44 rounded-full border border-caramel/25 bg-porcelain" />
-            <div className="absolute bottom-16 left-4 rounded-2xl border border-cocoa/10 bg-porcelain p-5 shadow-[0_18px_50px_rgba(75,48,34,0.12)]">
-              <Leaf className="text-forest" />
-              <p className="mt-3 text-sm font-semibold">{language === "en" ? "Natural · Vegetarian" : "天然 · 素食"}</p>
-              <p className="mt-1 text-xs text-cocoa/60">{language === "en" ? "Made without preservatives" : "無添加防腐劑"}</p>
-            </div>
-          </div>
-        </div>
-      </section>
+    <div className="min-h-screen bg-porcelain text-cocoa">
+      <HomeHeader />
+      <main>
+        <HeroSection />
+        <PathwaysSection />
+        <FlavoursSection />
+        <AvailabilitySection />
+        <MandalaSection />
+        <ValuesSection />
+        <BottomInfoSection />
+      </main>
+      <HomeFooter />
+    </div>
+  );
+}
 
-      <section className="bg-blush/55">
-        <div className="container-shell grid md:grid-cols-2">
-          <Link href="/cakes" className="focus-ring group border-b border-cocoa/10 py-16 md:border-r md:border-b-0 md:pr-12">
-            <ShoppingBag className="text-forest" />
-            <h2 className="display mt-8 text-5xl font-semibold">Basque cheesecake</h2>
-            <p className="mt-2 font-serif text-xl text-caramel">巴斯克乳酪蛋糕</p>
-            <p className="mt-5 max-w-md leading-7 text-cocoa/65">{language === "en" ? "Choose your flavour, then collect from a published Brisbane pickup location." : "選擇喜愛的口味，再從已公布的布里斯本取貨地點中預約。"}</p>
-            <span className="mt-8 inline-flex items-center gap-2 font-semibold text-forest">Explore cakes <ArrowRight className="transition-transform group-hover:translate-x-1" size={18} /></span>
-          </Link>
-          <Link href="/classes" className="focus-ring group py-16 md:pl-12">
-            <Palette className="text-forest" />
-            <h2 className="display mt-8 text-5xl font-semibold">Mandala classes</h2>
-            <p className="mt-2 font-serif text-xl text-caramel">曼陀羅靜心繪畫</p>
-            <p className="mt-5 max-w-md leading-7 text-cocoa/65">{language === "en" ? "Slow down, learn dot painting, and create your own meditative artwork." : "慢下腳步，學習點繪技巧，完成屬於自己的療癒作品。"}</p>
-            <span className="mt-8 inline-flex items-center gap-2 font-semibold text-forest">View classes <ArrowRight className="transition-transform group-hover:translate-x-1" size={18} /></span>
+function HomeHeader() {
+  const { language, setLanguage } = useLanguage();
+
+  return (
+    <header className="relative z-30 border-t-2 border-cocoa/80 bg-porcelain/95">
+      <div className="mx-auto flex min-h-[86px] w-[min(1410px,calc(100%-36px))] items-center justify-between gap-6">
+        <Link href="/" className="focus-ring flex items-center gap-3" aria-label="Debbie Dessert home">
+          <Image src="/assets/logo.jpg" alt="Debbie Dessert 甜品療癒師 logo" width={86} height={86} className="h-[76px] w-[76px] rounded-sm object-cover mix-blend-multiply" priority />
+        </Link>
+        <nav className="hidden items-center gap-12 lg:flex" aria-label="Primary navigation">
+          {navItems.map((item) => (
+            <Link key={item.href} href={item.href} className="focus-ring group text-center text-[15px] leading-tight text-cocoa">
+              <span className="block font-serif">{item.en}</span>
+              <span className="mt-1 block text-xs tracking-[0.15em] text-cocoa/70">{item.zh}</span>
+              {item.href === "/" ? <span className="mx-auto mt-2 block h-px w-7 bg-cocoa" /> : null}
+            </Link>
+          ))}
+        </nav>
+        <div className="flex items-center gap-3">
+          <div className="hidden rounded-full border border-cocoa/45 bg-porcelain px-3 py-2 text-xs font-semibold sm:flex" aria-label="Language selector">
+            <button type="button" onClick={() => setLanguage("en")} className={language === "en" ? "text-cocoa" : "text-cocoa/45"}>
+              EN
+            </button>
+            <span className="px-2 text-cocoa/35">/</span>
+            <button type="button" onClick={() => setLanguage("zh")} className={language === "zh" ? "text-cocoa" : "text-cocoa/45"}>
+              繁中
+            </button>
+          </div>
+          <Link href="/contact" className="focus-ring hidden rounded-lg bg-forest px-6 py-3 text-center text-sm font-semibold leading-tight text-white shadow-sm transition hover:bg-cocoa sm:block">
+            Contact
+            <span className="block text-xs tracking-[0.2em]">聯絡我們</span>
           </Link>
         </div>
-      </section>
+      </div>
+    </header>
+  );
+}
 
-      <section className="section-pad">
-        <div className="container-shell">
-          <SectionHeading title={language === "en" ? "Three comforting flavours" : "三種幸福滋味"} chinese={language === "en" ? "經典原味 · 法芙娜可可 · 厚芋泥" : "Original · Chocolate · Taro"} description={language === "en" ? "Balanced sweetness, creamy texture, and carefully selected ingredients in every six-inch cake." : "每一個六吋蛋糕，都有恰到好處的甜度、綿密口感與用心挑選的食材。"} />
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
-            {products.map((product) => (
-              <article key={product.id} className="group">
-                <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-cream">
-                  <Image src={product.image} alt={`${product.name.en} Basque cheesecake`} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition duration-500 group-hover:scale-[1.03]" style={{ objectPosition: product.imagePosition }} />
-                </div>
-                <div className="flex items-start justify-between gap-4 pt-6">
-                  <div>
-                    <h3 className="display text-3xl font-semibold">{t(product.name)}</h3>
-                    <p className="mt-1 text-sm text-caramel">{language === "en" ? product.name.zh : product.name.en}</p>
+function HeroSection() {
+  return (
+    <section className="relative overflow-hidden border-b border-cocoa/10">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_42%,rgba(232,206,193,0.5),transparent_34%),linear-gradient(90deg,#fff9f3_0%,#fff9f3_42%,#f8efe7_100%)]" />
+      <div className="relative mx-auto grid min-h-[690px] w-[min(1410px,calc(100%-36px))] items-center gap-10 py-14 lg:grid-cols-[0.87fr_1.13fr]">
+        <div className="relative z-10 max-w-[650px]">
+          <h1 className="display text-[clamp(3.8rem,6.1vw,6.35rem)] font-semibold leading-[0.96] tracking-[-0.045em] text-cocoa">
+            Healing through
+            <br />
+            dessert
+          </h1>
+          <p className="mt-3 text-[clamp(1.85rem,3.4vw,3.35rem)] font-medium leading-tight tracking-[0.08em]">以甜品療癒日常</p>
+          <Ornament className="my-6 w-72" />
+          <p className="max-w-[370px] text-[15px] leading-6 text-cocoa/80">
+            Natural vegetarian Basque cheesecakes and mindful mandala drawing classes in Brisbane.
+          </p>
+          <p className="mt-3 max-w-[395px] text-[15px] leading-7 tracking-[0.08em] text-cocoa/72">
+            天然素食巴斯克乳酪蛋糕，與靜心曼陀羅繪畫課程，在布里斯本。
+          </p>
+          <div className="mt-10 flex flex-wrap gap-4">
+            <Link href="/cakes" className="focus-ring inline-flex min-h-[58px] items-center gap-4 rounded-md bg-forest px-6 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-cocoa">
+              <CakeSlice size={34} strokeWidth={1.4} />
+              <span>
+                Order a cake
+                <span className="block text-sm tracking-[0.18em]">訂購蛋糕</span>
+              </span>
+            </Link>
+            <Link href="/classes" className="focus-ring inline-flex min-h-[58px] items-center gap-4 rounded-md border border-cocoa/45 bg-porcelain/70 px-6 py-3 text-left font-semibold text-cocoa transition hover:bg-white">
+              <Palette size={34} strokeWidth={1.2} className="text-caramel" />
+              <span>
+                Book a class
+                <span className="block text-sm tracking-[0.18em]">預約課程</span>
+              </span>
+            </Link>
+          </div>
+        </div>
+        <div className="relative min-h-[520px]">
+          <div className="mandala-dots absolute left-[4%] top-[3%] h-[460px] w-[460px] rounded-full opacity-55 [mask-image:radial-gradient(circle,black_58%,transparent_72%)]" />
+          <div className="absolute right-[-2%] top-[2%] h-[520px] w-[95%]">
+            <Image src="/assets/reference-hero-cake.png" alt="Whole Basque cheesecake with a cut slice and eucalyptus" fill sizes="(max-width: 1024px) 92vw, 58vw" className="object-contain object-right" priority />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PathwaysSection() {
+  return (
+    <section className="border-b border-cocoa/10 bg-[linear-gradient(180deg,#fff9f3_0%,#fcf2ea_100%)] py-8">
+      <SectionTitle title="Two paths to your moment of calm" zh="兩種方式，療癒你的日常" />
+      <div className="mx-auto mt-8 grid w-[min(1340px,calc(100%-36px))] overflow-hidden rounded-xl border border-cocoa/12 bg-white/55 shadow-[0_16px_40px_rgba(75,48,34,0.06)] lg:grid-cols-2">
+        <Link href="/cakes" className="focus-ring group relative min-h-[335px] overflow-hidden bg-blush/70 p-8 md:p-10">
+          <Image src="/assets/menu.jpg" alt="Slice of original Basque cheesecake on a plate" fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover opacity-80 transition duration-500 group-hover:scale-[1.03]" style={{ objectPosition: "74% 31%" }} />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(232,206,193,0.92)_0%,rgba(232,206,193,0.74)_43%,rgba(232,206,193,0.08)_100%)]" />
+          <div className="relative max-w-[265px]">
+            <CakeSlice size={42} strokeWidth={1.2} />
+            <h3 className="display mt-8 text-4xl font-semibold">Cakes</h3>
+            <p className="mt-1 text-2xl tracking-[0.08em]">蛋糕訂購</p>
+            <p className="mt-8 text-[15px] leading-6 text-cocoa/75">Order freshly made Basque cheesecakes for your special moments.</p>
+            <p className="mt-4 text-[14px] leading-6 tracking-[0.08em] text-cocoa/70">公開蛋糕日期，預訂新鮮製作的巴斯克乳酪蛋糕。</p>
+            <span className="mt-10 inline-flex items-center text-sm font-semibold text-forest">
+              View available dates <ChevronRight size={16} />
+            </span>
+            <span className="mt-1 block text-sm tracking-[0.12em] text-forest">查看可預訂日期</span>
+          </div>
+        </Link>
+        <Link href="/classes" className="focus-ring group relative min-h-[335px] overflow-hidden bg-porcelain p-8 md:p-10">
+          <Image src="/assets/mandala.jpg" alt="Hand-painted mandala artwork surrounded by greenery" fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover transition duration-500 group-hover:scale-[1.03]" style={{ objectPosition: "84% 38%" }} />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,249,243,0.98)_0%,rgba(255,249,243,0.85)_45%,rgba(255,249,243,0.2)_100%)]" />
+          <div className="relative ml-auto max-w-[310px] lg:ml-0">
+            <Palette className="text-forest" size={42} strokeWidth={1.2} />
+            <h3 className="display mt-8 text-4xl font-semibold">Mandala Classes</h3>
+            <p className="mt-1 text-2xl tracking-[0.08em]">曼陀羅繪畫課程</p>
+            <p className="mt-8 text-[15px] leading-6 text-cocoa/75">Slow down, unwind and create your own mandala art.</p>
+            <p className="mt-4 text-[14px] leading-6 tracking-[0.08em] text-cocoa/70">放慢步伐，沉澱心緒，創作屬於你的曼陀羅畫。</p>
+            <span className="mt-10 inline-flex items-center text-sm font-semibold text-forest">
+              See upcoming classes <ChevronRight size={16} />
+            </span>
+            <span className="mt-1 block text-sm tracking-[0.12em] text-forest">查看課程時間</span>
+          </div>
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function FlavoursSection() {
+  return (
+    <section className="bg-porcelain py-8">
+      <SectionTitle title="Basque Cheesecake Flavours" zh="巴斯克乳酪蛋糕口味" />
+      <div className="mx-auto mt-9 grid w-[min(1340px,calc(100%-36px))] gap-8 md:grid-cols-3">
+        {products.map((product) => {
+          const details = flavourDetails.find((item) => item.id === product.id) ?? flavourDetails[0];
+          return (
+            <article key={product.id} className="overflow-hidden rounded-lg border border-blush bg-porcelain shadow-[0_10px_26px_rgba(75,48,34,0.04)]">
+              <div className="relative h-[245px] overflow-hidden bg-white">
+                <Image src={details.image} alt={`${product.name.en} Basque cheesecake slice`} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" style={{ objectPosition: details.imagePosition }} />
+                <div className="absolute left-5 top-4 rounded-full bg-caramel px-5 py-2 text-sm font-semibold tracking-[0.12em] text-white">{product.name.zh}</div>
+                <div className="absolute left-[150px] top-5 font-serif text-2xl italic text-cocoa/80">{details.script}</div>
+              </div>
+              <div className="grid grid-cols-3 border-y border-blush/80 bg-porcelain">
+                {details.notes.map(([en, zh], index) => (
+                  <div key={en} className="border-r border-blush/70 px-3 py-4 text-center last:border-r-0">
+                    {index === 0 ? <Leaf className="mx-auto text-caramel" size={22} strokeWidth={1.2} /> : index === 1 ? <CakeSlice className="mx-auto text-caramel" size={22} strokeWidth={1.2} /> : <Heart className="mx-auto text-caramel" size={22} strokeWidth={1.2} />}
+                    <p className="mt-2 text-xs tracking-[0.08em]">{zh}</p>
+                    <p className="mt-1 text-[11px] text-cocoa/65">{en}</p>
                   </div>
-                  <p className="font-semibold">from ${product.price}</p>
+                ))}
+              </div>
+              <p className="py-4 text-center font-serif text-xl">
+                From ${product.price} <span className="text-sm">起</span>
+              </p>
+            </article>
+          );
+        })}
+      </div>
+      <div className="mt-8 text-center">
+        <Link href="/cakes" className="focus-ring inline-flex min-h-10 items-center justify-center rounded-md border border-caramel/55 px-8 text-sm font-semibold text-cocoa transition hover:bg-blush/40">
+          View all cakes <span className="ml-3 tracking-[0.1em]">查看全部蛋糕</span>
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function AvailabilitySection() {
+  return (
+    <section className="relative overflow-hidden bg-[#fbf5ed] py-10">
+      <div className="absolute -left-8 top-10 hidden h-56 w-32 rounded-full border border-sage/35 md:block" />
+      <div className="mx-auto grid w-[min(1340px,calc(100%-36px))] gap-8 lg:grid-cols-[1fr_240px]">
+        <div>
+          <div className="flex items-start justify-between gap-6">
+            <div>
+              <h2 className="display text-3xl font-semibold">Upcoming Cake Availability</h2>
+              <p className="mt-1 text-lg tracking-[0.1em]">近期可預訂日期</p>
+            </div>
+            <Link href="/cakes" className="focus-ring hidden text-sm font-semibold text-forest sm:inline-flex">
+              View full calendar <ChevronRight size={16} />
+            </Link>
+          </div>
+          <div className="mt-7 grid gap-3 md:grid-cols-4">
+            {availabilityCards.map((card) => (
+              <article key={`${card.date}-${card.month}`} className="rounded-lg border border-sage/55 bg-porcelain p-5 shadow-sm">
+                <div className="flex items-start gap-4">
+                  <div className="text-center font-serif">
+                    <p className="text-sm">{card.day}</p>
+                    <p className="text-3xl font-semibold">{card.date}</p>
+                    <p className="text-sm">{card.month}</p>
+                  </div>
+                  <div className="pt-1 text-sm leading-6">
+                    <p className="font-semibold">{card.locations}</p>
+                    <p className="tracking-[0.08em] text-cocoa/70">{card.zh}</p>
+                    <p className="mt-1 text-xs">8:30am - 3:00pm</p>
+                  </div>
                 </div>
-                <p className="mt-4 text-sm leading-7 text-cocoa/65">{t(product.description)}</p>
+                <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-cocoa/14">
+                  <div className="h-full rounded-full bg-forest" style={{ width: `${card.soldOut ? 100 : (card.remaining / card.capacity) * 100}%` }} />
+                </div>
+                <p className="mt-3 text-sm">
+                  {card.soldOut ? "Sold out" : `${card.remaining} / ${card.capacity} cakes left`}
+                  <span className="block tracking-[0.08em] text-cocoa/70">{card.soldOut ? "已售完" : `尚餘 ${card.remaining} / ${card.capacity} 個蛋糕`}</span>
+                </p>
+                <Link href="/cakes" className={`focus-ring mt-5 inline-flex min-h-10 w-full items-center justify-center rounded-md border text-sm font-semibold ${card.soldOut ? "border-caramel/45 text-cocoa" : "border-forest bg-forest text-white hover:bg-cocoa"}`}>
+                  {card.soldOut ? "Join waitlist" : "Order now"}
+                  <span className="ml-2 tracking-[0.12em]">{card.soldOut ? "加入候補名單" : "立即訂購"}</span>
+                </Link>
               </article>
             ))}
           </div>
-          <Link href="/cakes" className="focus-ring mt-12 inline-flex min-h-12 items-center gap-2 rounded-full bg-cocoa px-6 py-3 font-semibold text-white">Build your order <ArrowRight size={18} /></Link>
-        </div>
-      </section>
-
-      <section className="bg-forest text-porcelain">
-        <div className="container-shell grid items-center gap-12 py-20 lg:grid-cols-[1fr_0.85fr]">
-          <div>
-            <SectionHeading title={language === "en" ? "Next cake days" : "下一次蛋糕日"} chinese="少量手作 · 預約取貨" />
-            <p className="mt-5 max-w-xl leading-8 text-porcelain/70">{language === "en" ? "Debbie publishes only the dates and pickup windows she can personally fulfil. Reserve early, as each day has a small production limit." : "Debbie 只會開放能親自製作與交付的日期和時段。每日數量有限，建議提早預訂。"}</p>
+          <div className="mt-4 flex flex-wrap justify-between gap-3 text-xs text-cocoa/65">
+            <p>All times are in Australia/Brisbane (AEST) 澳洲布里斯本時間</p>
+            <p>Orders close 2 days before each date 每個日期前 2 天截止下單</p>
           </div>
-          <div className="divide-y divide-porcelain/15 rounded-2xl border border-porcelain/20">
-            {cakeDates.map((date) => (
-              <div key={date.id} className="flex items-center justify-between gap-4 p-6">
-                <div className="flex items-center gap-4">
-                  <CalendarDays className="text-blush" />
-                  <div><p className="font-semibold">{language === "en" ? date.date : date.dateZh}</p><p className="mt-1 text-sm text-porcelain/60">{date.slots.length} pickup options</p></div>
-                </div>
-                <span className="text-sm text-blush">{date.remaining} left</span>
+        </div>
+        <aside className="rounded-lg border border-blush bg-porcelain p-6">
+          <h3 className="font-serif text-xl font-semibold">Pickup locations</h3>
+          <p className="mt-1 tracking-[0.12em]">取貨地點</p>
+          <div className="mt-6 space-y-5 text-sm">
+            {["Park Ridge", "Calamvale", "Sunnybank"].map((location) => (
+              <div key={location} className="flex gap-3">
+                <MapPin className="mt-0.5 text-caramel" size={18} strokeWidth={1.4} />
+                <p>
+                  {location}
+                  <span className="block text-cocoa/60">布里斯本南區</span>
+                </p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+          <p className="mt-6 text-sm leading-6 text-cocoa/65">and more 更多地點陸續新增</p>
+        </aside>
+      </div>
+    </section>
+  );
+}
 
-      <section className="section-pad">
-        <div className="container-shell grid items-center gap-14 lg:grid-cols-2">
-          <div className="relative grid grid-cols-2 gap-4">
-            <div className="relative aspect-[3/4] overflow-hidden rounded-t-full"><Image src="/assets/mandala-class.jpg" alt="Debbie teaching mandala dot painting" fill sizes="(max-width: 1024px) 50vw, 25vw" className="object-cover" /></div>
-            <div className="relative mt-20 aspect-[3/4] overflow-hidden rounded-b-full"><Image src="/assets/mandala.jpg" alt="Green and gold hand-painted mandala artwork" fill sizes="(max-width: 1024px) 50vw, 25vw" className="object-cover" /></div>
-          </div>
-          <div>
-            <SectionHeading title={language === "en" ? "Create space to breathe" : "留一點空間，讓心呼吸"} chinese="Mandala drawing · 曼陀羅點繪" description={language === "en" ? "A welcoming guided class for beginners and returning makers. All materials are included, so you can simply arrive and enjoy the process." : "適合初學者與想再次創作的朋友。材料皆已準備好，只需要帶著自己，享受慢慢完成作品的過程。"} />
-            <Link href="/classes" className="focus-ring mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-forest px-6 py-3 font-semibold text-white">See upcoming classes <ArrowRight size={18} /></Link>
-          </div>
-        </div>
-      </section>
+function MandalaSection() {
+  const nextClass = classSessions[0];
 
-      <section className="paper border-y border-cocoa/10">
-        <div className="container-shell py-24 text-center">
-          <p className="display mx-auto max-w-3xl text-4xl leading-tight font-semibold md:text-6xl">“Made gently, shared with joy.”</p>
-          <p className="mt-4 font-serif text-xl text-caramel">用心製作每一份甜點，分享幸福滋味</p>
-          <Link href="/about" className="focus-ring mt-8 inline-flex items-center gap-2 font-semibold text-forest">Meet Debbie <ArrowRight size={18} /></Link>
+  return (
+    <section className="relative overflow-hidden bg-blush/70">
+      <div className="absolute -right-16 -top-20 h-80 w-80 rounded-full border border-white/60 mandala-dots opacity-50" />
+      <div className="mx-auto grid w-[min(1410px,calc(100%-36px))] items-center gap-8 py-10 lg:grid-cols-[390px_1fr_260px]">
+        <div className="relative h-[245px] overflow-hidden rounded-r-[80px] lg:rounded-none lg:rounded-r-[120px]">
+          <Image src="/assets/mandala-class.jpg" alt="Mandala drawing class with dot painting tools" fill sizes="(max-width: 1024px) 100vw, 380px" className="object-cover" style={{ objectPosition: "44% 52%" }} />
         </div>
-      </section>
-    </>
+        <div className="max-w-xl px-2">
+          <h2 className="display text-4xl font-semibold md:text-5xl">Mandala Drawing Classes</h2>
+          <p className="mt-1 text-2xl tracking-[0.1em]">曼陀羅繪畫課程</p>
+          <p className="mt-7 text-[15px] leading-7 text-cocoa/75">No experience needed. All materials are provided. Come as you are. Leave lighter.</p>
+          <p className="mt-3 text-[15px] leading-7 tracking-[0.08em] text-cocoa/70">無需經驗，提供所有材料，靜心創作，讓自己更輕盈地生活。</p>
+          <Link href="/classes" className="focus-ring mt-8 inline-flex min-h-12 items-center justify-center rounded-md border border-forest px-10 text-sm font-semibold text-forest transition hover:bg-forest hover:text-white">
+            View upcoming classes <span className="ml-3 tracking-[0.12em]">查看課程時間</span>
+          </Link>
+        </div>
+        <aside className="relative rounded-lg bg-porcelain p-7 shadow-[0_18px_45px_rgba(75,48,34,0.1)]">
+          <div className="flex gap-3 text-forest">
+            <CalendarDays size={22} />
+            <p className="text-sm font-semibold">
+              Next class
+              <span className="block tracking-[0.12em]">下一堂課</span>
+            </p>
+          </div>
+          <p className="mt-6 font-serif text-xl">{nextClass.date}</p>
+          <p className="mt-1 text-sm">{nextClass.time}</p>
+          <div className="mt-4 flex gap-3 text-sm text-cocoa/70">
+            <MapPin size={17} className="text-caramel" />
+            <span>{nextClass.venue}</span>
+          </div>
+          <div className="mt-4 flex gap-3 text-sm text-cocoa/70">
+            <Users size={17} className="text-caramel" />
+            <span>{nextClass.remaining} / {nextClass.capacity} seats left</span>
+          </div>
+          <p className="mt-5 font-serif text-xl">From ${nextClass.price} 起</p>
+          <Link href="/classes" className="focus-ring mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-md bg-forest text-sm font-semibold text-white hover:bg-cocoa">
+            Book now <span className="ml-2 tracking-[0.12em]">立即預約</span>
+          </Link>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+function ValuesSection() {
+  return (
+    <section className="bg-porcelain py-9">
+      <div className="mx-auto grid w-[min(1120px,calc(100%-36px))] gap-6 md:grid-cols-4">
+        {values.map((value, index) => {
+          const Icon = value.icon;
+          return (
+            <article key={value.title} className={`text-center ${index > 0 ? "md:border-l md:border-dashed md:border-caramel/35" : ""}`}>
+              <Icon className="mx-auto text-caramel" size={42} strokeWidth={1.2} />
+              <h3 className="mt-3 font-serif text-lg font-semibold">{value.title}</h3>
+              <p className="tracking-[0.12em]">{value.zh}</p>
+              <p className="mx-auto mt-3 max-w-[160px] text-xs leading-5 text-cocoa/70">{value.body}</p>
+              <p className="mx-auto mt-1 max-w-[160px] text-xs leading-5 tracking-[0.08em] text-cocoa/60">{value.bodyZh}</p>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function BottomInfoSection() {
+  return (
+    <section className="grid border-t border-cocoa/10 bg-[#fbf2ea] lg:grid-cols-3">
+      <div className="p-10 lg:pl-[max(40px,calc((100vw-1340px)/2))]">
+        <h2 className="font-serif text-2xl font-semibold">FAQ</h2>
+        <p className="tracking-[0.12em]">常見問題</p>
+        <div className="mt-6 overflow-hidden rounded-lg border border-blush bg-porcelain">
+          {faqs.map((faq) => (
+            <Link key={faq} href="/faq" className="focus-ring flex items-center justify-between border-b border-blush px-4 py-3 text-sm last:border-b-0 hover:bg-white">
+              <span>{faq}</span>
+              <ChevronRight size={16} className="text-caramel" />
+            </Link>
+          ))}
+        </div>
+        <Link href="/faq" className="focus-ring mt-6 inline-flex items-center text-sm font-semibold text-forest">
+          View all FAQs <ChevronRight size={16} />
+          <span className="ml-4 tracking-[0.12em]">查看全部常見問題</span>
+        </Link>
+      </div>
+      <div className="bg-blush/55 p-10 text-center">
+        <h2 className="font-serif text-2xl font-semibold">About Debbie</h2>
+        <p className="tracking-[0.12em]">關於 Debbie</p>
+        <Image src="/assets/logo.jpg" alt="Debbie Dessert logo" width={170} height={170} className="mx-auto mt-6 rounded-sm object-cover mix-blend-multiply" />
+        <div className="mt-6 flex justify-center gap-4 text-cocoa">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cocoa/35"><Camera size={17} /></span>
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cocoa/35"><Heart size={17} /></span>
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cocoa/35"><Mail size={17} /></span>
+        </div>
+      </div>
+      <div className="p-10 lg:pr-[max(40px,calc((100vw-1340px)/2))]">
+        <h2 className="font-serif text-2xl font-semibold">Contact</h2>
+        <p className="tracking-[0.12em]">聯絡我們</p>
+        <div className="mt-6 space-y-4 text-sm leading-6">
+          <p className="flex gap-3"><Clock className="mt-1 text-forest" size={17} />0423 456 789</p>
+          <p className="flex gap-3"><Mail className="mt-1 text-forest" size={17} />hello@debbiedessert.com.au</p>
+          <p className="flex gap-3"><MapPin className="mt-1 text-forest" size={17} />Brisbane, QLD 布里斯本，昆士蘭</p>
+          <p className="pt-2 text-cocoa/70">Response time 回覆時間<br />Usually within 1-2 business days 通常 1-2 個工作天內回覆</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HomeFooter() {
+  return (
+    <footer className="bg-forest text-porcelain">
+      <div className="mx-auto flex w-[min(1340px,calc(100%-36px))] flex-col gap-4 py-5 text-xs md:flex-row md:items-center md:justify-between">
+        <p>© 2026 Debbie Dessert 甜品療癒師. All rights reserved.</p>
+        <div className="flex flex-wrap gap-8">
+          <Link href="/faq" className="focus-ring hover:text-blush">Privacy Policy 隱私政策</Link>
+          <Link href="/faq" className="focus-ring hover:text-blush">Terms 條款</Link>
+          <Link href="/faq" className="focus-ring hover:text-blush">Refunds 退款政策</Link>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function SectionTitle({ title, zh }: { title: string; zh: string }) {
+  return (
+    <div className="text-center">
+      <h2 className="display text-4xl font-semibold leading-tight md:text-5xl">{title}</h2>
+      <p className="mt-1 text-2xl tracking-[0.12em]">{zh}</p>
+      <Ornament className="mx-auto mt-3 w-40" />
+    </div>
+  );
+}
+
+function Ornament({ className = "" }: { className?: string }) {
+  return (
+    <div className={`flex items-center justify-center gap-3 text-caramel ${className}`} aria-hidden="true">
+      <span className="h-px flex-1 bg-caramel/45" />
+      <Heart size={18} strokeWidth={1.2} />
+      <span className="h-px flex-1 bg-caramel/45" />
+    </div>
   );
 }
