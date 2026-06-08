@@ -22,6 +22,8 @@ The application uses seeded demo data when Supabase environment variables are ab
 
 All exposed tables use RLS. Public mutations are limited to the two atomic reservation functions.
 
+The `/admin` dashboard is fail-closed: it does not show order, production, or class details unless Supabase is configured, the visitor is signed in, and `public.is_owner()` returns true. In local development without Supabase env vars, `/admin` redirects to `/admin/login?error=setup`.
+
 ## Payments and email
 
 Cake checkout uses a provider-neutral boundary. Implement a Stripe or Square adapter that:

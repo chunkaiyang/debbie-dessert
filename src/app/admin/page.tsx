@@ -2,7 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AlertCircle, CalendarDays, CakeSlice, ChevronRight, CircleDollarSign, Clock, Palette, Users } from "lucide-react";
 import { adminOrders, cakeDates, classSessions } from "@/lib/site-data";
-import { getSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { getOwnerSession } from "@/lib/supabase/server";
+import { signOutOwner } from "./login/actions";
+
+export const dynamic = "force-dynamic";
 
 const production = [
   { flavour: "Original", size: '6"', quantity: 3 },
@@ -11,18 +14,26 @@ const production = [
 ];
 
 export default async function AdminPage() {
-  if (isSupabaseConfigured()) {
-    const supabase = await getSupabaseServerClient();
-    const { data } = await supabase!.auth.getUser();
-    if (!data.user) redirect("/admin/login");
+  const ownerSession = await getOwnerSession();
+  if (!ownerSession.ok) {
+    const error = ownerSession.reason === "not_configured" ? "?error=setup" : ownerSession.reason === "not_owner" ? "?error=unauthorized" : "";
+    redirect(`/admin/login${error}`);
   }
+
+  const ownerEmail = ownerSession.user.email ?? "Owner";
   const totalCakes = production.reduce((sum, item) => sum + item.quantity, 0);
   return (
     <div className="min-h-screen bg-[#f4f1ec] text-[#2e2925]">
       <div className="border-b border-black/10 bg-white">
         <div className="container-shell flex min-h-20 items-center justify-between gap-4">
           <div><p className="display text-2xl font-semibold">Owner dashboard</p><p className="text-xs text-black/50">Debbie Dessert · Australia/Brisbane</p></div>
-          <div className="flex items-center gap-3"><span className="hidden text-sm text-black/55 sm:inline">Demo owner</span><div className="flex size-10 items-center justify-center rounded-full bg-forest font-semibold text-white">D</div></div>
+          <div className="flex items-center gap-3">
+            <span className="hidden text-sm text-black/55 sm:inline">{ownerEmail}</span>
+            <form action={signOutOwner}>
+              <button className="focus-ring min-h-10 rounded-full border border-black/15 px-4 text-sm font-semibold">Sign out</button>
+            </form>
+            <div className="flex size-10 items-center justify-center rounded-full bg-forest font-semibold text-white">D</div>
+          </div>
         </div>
       </div>
       <div className="container-shell py-10">
