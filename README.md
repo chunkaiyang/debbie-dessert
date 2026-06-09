@@ -24,9 +24,16 @@ All exposed tables use RLS. Public mutations are limited to the two atomic reser
 
 The `/admin` dashboard is fail-closed: it does not show order, production, or class details unless Supabase is configured, the visitor is signed in, and `public.is_owner()` returns true. In local development without Supabase env vars, `/admin` redirects to `/admin/login?error=setup`.
 
-## Payments and email
+## Cake confirmation, payments and email
 
-Cake checkout uses a provider-neutral boundary. Implement a Stripe or Square adapter that:
+Cake ordering currently uses a manual-confirmation flow:
+
+- Public cake availability is read from Supabase through `get_cake_ordering_data`.
+- `reserve_cake_order` reserves capacity immediately with `pending_confirmation` and `payment_status = 'unpaid'`.
+- Debbie confirms pickup and payment details manually before production.
+- Customer and owner notification records are inserted into `notification_outbox`.
+
+Online cake checkout remains provider-neutral. To add Stripe or Square later:
 
 - Creates hosted checkout from the server after `reserve_cake_order`.
 - Stores the provider reference in `payments`.

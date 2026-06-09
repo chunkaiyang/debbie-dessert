@@ -104,5 +104,5 @@ export const classSessions = [
 export const adminOrders = [
   { id: "DD-1048", customer: "Sophie Chen", date: "20 Jun", items: "2 Original · 1 Taro", slot: "Sunnybank 3 pm", status: "Confirmed" },
   { id: "DD-1047", customer: "Amy Liu", date: "20 Jun", items: "1 Chocolate", slot: "Calamvale 1:30 pm", status: "In production" },
-  { id: "DD-1046", customer: "Mia Wong", date: "27 Jun", items: "2 Taro", slot: "Park Ridge 10 am", status: "Awaiting payment" },
+  { id: "DD-1046", customer: "Mia Wong", date: "27 Jun", items: "2 Taro", slot: "Park Ridge 10 am", status: "Pending confirmation" },
 ] as const;

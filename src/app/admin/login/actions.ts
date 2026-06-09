@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function signInOwner(formData: FormData) {
@@ -18,11 +19,13 @@ export async function signInOwner(formData: FormData) {
     redirect("/admin/login?error=unauthorized");
   }
 
+  revalidatePath("/admin", "layout");
   redirect("/admin");
 }
 
 export async function signOutOwner() {
   const supabase = await getSupabaseServerClient();
   if (supabase) await supabase.auth.signOut();
+  revalidatePath("/admin", "layout");
   redirect("/admin/login");
 }

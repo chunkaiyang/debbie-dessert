@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -15,16 +16,10 @@ import {
   Palette,
   Users,
 } from "lucide-react";
-import { useLanguage } from "@/components/language-provider";
+import { Header } from "@/components/header";
 import { classSessions, products } from "@/lib/site-data";
-
-const navItems = [
-  { href: "/", en: "Home", zh: "首頁" },
-  { href: "/cakes", en: "Cakes", zh: "蛋糕訂購" },
-  { href: "/classes", en: "Mandala Classes", zh: "曼陀羅繪畫課程" },
-  { href: "/about", en: "About", zh: "關於我" },
-  { href: "/faq", en: "FAQ", zh: "常見問題" },
-];
+import type { CakeOrderingData } from "@/lib/cake-availability";
+import { getDemoCakeOrderingData } from "@/lib/cake-availability";
 
 const flavourDetails = [
   {
@@ -62,13 +57,6 @@ const flavourDetails = [
   },
 ];
 
-const availabilityCards = [
-  { day: "Sat", date: "20", month: "Jun", locations: "3 locations", zh: "多個取貨地點", remaining: 8, capacity: 20, soldOut: false },
-  { day: "Sat", date: "27", month: "Jun", locations: "2 locations", zh: "多個取貨地點", remaining: 12, capacity: 20, soldOut: false },
-  { day: "Sun", date: "5", month: "Jul", locations: "2 locations", zh: "多個取貨地點", remaining: 16, capacity: 20, soldOut: false },
-  { day: "Sun", date: "12", month: "Jul", locations: "2 locations", zh: "多個取貨地點", remaining: 0, capacity: 20, soldOut: true },
-];
-
 const values = [
   { icon: Leaf, title: "Natural & Vegetarian", zh: "天然素食", body: "Made with simple, wholesome ingredients.", bodyZh: "選用天然食材，簡單純粹。" },
   { icon: CakeSlice, title: "Handcrafted with Care", zh: "用心手作", body: "Every cake and class is made with intention.", bodyZh: "每一份甜品與課程，都是用心完成。" },
@@ -86,7 +74,7 @@ const faqs = [
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-porcelain text-cocoa">
-      <HomeHeader />
+      <Header />
       <main>
         <HeroSection />
         <PathwaysSection />
@@ -101,49 +89,11 @@ export default function HomePage() {
   );
 }
 
-function HomeHeader() {
-  const { language, setLanguage } = useLanguage();
-
-  return (
-    <header className="relative z-30 border-t-2 border-cocoa/80 bg-porcelain/95">
-      <div className="mx-auto flex min-h-[86px] w-[min(1410px,calc(100%-36px))] items-center justify-between gap-6">
-        <Link href="/" className="focus-ring flex items-center gap-3" aria-label="Debbie Dessert home">
-          <Image src="/assets/logo.jpg" alt="Debbie Dessert 甜品療癒師 logo" width={86} height={86} className="h-[76px] w-[76px] rounded-sm object-cover mix-blend-multiply" priority />
-        </Link>
-        <nav className="hidden items-center gap-12 lg:flex" aria-label="Primary navigation">
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="focus-ring group text-center text-[15px] leading-tight text-cocoa">
-              <span className="block font-serif">{item.en}</span>
-              <span className="mt-1 block text-xs tracking-[0.15em] text-cocoa/70">{item.zh}</span>
-              {item.href === "/" ? <span className="mx-auto mt-2 block h-px w-7 bg-cocoa" /> : null}
-            </Link>
-          ))}
-        </nav>
-        <div className="flex items-center gap-3">
-          <div className="hidden rounded-full border border-cocoa/45 bg-porcelain px-3 py-2 text-xs font-semibold sm:flex" aria-label="Language selector">
-            <button type="button" onClick={() => setLanguage("en")} className={language === "en" ? "text-cocoa" : "text-cocoa/45"}>
-              EN
-            </button>
-            <span className="px-2 text-cocoa/35">/</span>
-            <button type="button" onClick={() => setLanguage("zh")} className={language === "zh" ? "text-cocoa" : "text-cocoa/45"}>
-              繁中
-            </button>
-          </div>
-          <Link href="/contact" className="focus-ring hidden rounded-lg bg-forest px-6 py-3 text-center text-sm font-semibold leading-tight text-white shadow-sm transition hover:bg-cocoa sm:block">
-            Contact
-            <span className="block text-xs tracking-[0.2em]">聯絡我們</span>
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
-
 function HeroSection() {
   return (
     <section className="relative overflow-hidden border-b border-cocoa/10">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_42%,rgba(232,206,193,0.5),transparent_34%),linear-gradient(90deg,#fff9f3_0%,#fff9f3_42%,#f8efe7_100%)]" />
-      <div className="relative mx-auto grid min-h-[690px] w-[min(1410px,calc(100%-36px))] items-center gap-10 py-14 lg:grid-cols-[0.87fr_1.13fr]">
+      <div className="container-shell relative grid min-h-[690px] items-center gap-10 py-14 lg:grid-cols-[0.87fr_1.13fr]">
         <div className="relative z-10 max-w-[650px]">
           <h1 className="display text-[clamp(3.8rem,6.1vw,6.35rem)] font-semibold leading-[0.96] tracking-[-0.045em] text-cocoa">
             Healing through
@@ -177,8 +127,8 @@ function HeroSection() {
         </div>
         <div className="relative min-h-[520px]">
           <div className="mandala-dots absolute left-[4%] top-[3%] h-[460px] w-[460px] rounded-full opacity-55 [mask-image:radial-gradient(circle,black_58%,transparent_72%)]" />
-          <div className="absolute right-[-2%] top-[2%] h-[520px] w-[95%]">
-            <Image src="/assets/reference-hero-cake.png" alt="Whole Basque cheesecake with a cut slice and eucalyptus" fill sizes="(max-width: 1024px) 92vw, 58vw" className="object-contain object-right" priority />
+          <div className="absolute left-0 top-[2%] h-[520px] w-full lg:left-auto lg:right-[-2%] lg:w-[95%]">
+            <Image src="/assets/reference-hero-cake.png" alt="Whole Basque cheesecake with a cut slice and eucalyptus" fill sizes="(max-width: 1024px) 100vw, 58vw" className="object-contain object-left lg:object-right" priority />
           </div>
         </div>
       </div>
@@ -190,10 +140,13 @@ function PathwaysSection() {
   return (
     <section className="border-b border-cocoa/10 bg-[linear-gradient(180deg,#fff9f3_0%,#fcf2ea_100%)] py-8">
       <SectionTitle title="Two paths to your moment of calm" zh="兩種方式，療癒你的日常" />
-      <div className="mx-auto mt-8 grid w-[min(1340px,calc(100%-36px))] overflow-hidden rounded-xl border border-cocoa/12 bg-white/55 shadow-[0_16px_40px_rgba(75,48,34,0.06)] lg:grid-cols-2">
+      <div className="container-shell mt-8 grid overflow-hidden rounded-xl border border-cocoa/12 bg-white/55 shadow-[0_16px_40px_rgba(75,48,34,0.06)] lg:grid-cols-2">
         <Link href="/cakes" className="focus-ring group relative min-h-[335px] overflow-hidden bg-blush/70 p-8 md:p-10">
-          <Image src="/assets/menu.jpg" alt="Slice of original Basque cheesecake on a plate" fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover opacity-80 transition duration-500 group-hover:scale-[1.03]" style={{ objectPosition: "74% 31%" }} />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(232,206,193,0.92)_0%,rgba(232,206,193,0.74)_43%,rgba(232,206,193,0.08)_100%)]" />
+          <div className="absolute right-0 top-0 h-[68%] min-h-[250px] w-[86%] md:h-[72%] md:w-[76%]">
+            <Image src="/assets/original-card-crop.png" alt="Slice of original Basque cheesecake on a plate" fill sizes="(max-width: 1024px) 86vw, 38vw" className="object-contain object-right opacity-100 transition duration-500 group-hover:scale-[1.03]" style={{ objectPosition: "100% 0%" }} />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(232,206,193,1)_0%,rgba(232,206,193,0.82)_20%,rgba(232,206,193,0)_48%),linear-gradient(180deg,rgba(232,206,193,0)_0%,rgba(232,206,193,0)_58%,rgba(232,206,193,0.94)_100%)]" />
+          </div>
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(232,206,193,0.96)_0%,rgba(232,206,193,0.78)_38%,rgba(232,206,193,0.12)_68%,rgba(232,206,193,0)_100%)]" />
           <div className="relative max-w-[265px]">
             <CakeSlice size={42} strokeWidth={1.2} />
             <h3 className="display mt-8 text-4xl font-semibold">Cakes</h3>
@@ -207,8 +160,11 @@ function PathwaysSection() {
           </div>
         </Link>
         <Link href="/classes" className="focus-ring group relative min-h-[335px] overflow-hidden bg-porcelain p-8 md:p-10">
-          <Image src="/assets/mandala.jpg" alt="Hand-painted mandala artwork surrounded by greenery" fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover transition duration-500 group-hover:scale-[1.03]" style={{ objectPosition: "84% 38%" }} />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,249,243,0.98)_0%,rgba(255,249,243,0.85)_45%,rgba(255,249,243,0.2)_100%)]" />
+          <div className="absolute right-0 top-0 h-full min-h-[335px] w-full md:w-[76%]">
+            <Image src="/assets/mandala.jpg" alt="Hand-painted mandala artwork surrounded by greenery" fill sizes="(max-width: 1024px) 100vw, 38vw" className="object-cover transition duration-500 group-hover:scale-[1.03]" style={{ objectPosition: "82% 12%" }} />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,249,243,1)_0%,rgba(255,249,243,0.82)_22%,rgba(255,249,243,0)_50%),linear-gradient(180deg,rgba(255,249,243,0)_0%,rgba(255,249,243,0)_62%,rgba(255,249,243,0.92)_100%)]" />
+          </div>
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,249,243,0.98)_0%,rgba(255,249,243,0.82)_38%,rgba(255,249,243,0.16)_68%,rgba(255,249,243,0)_100%)]" />
           <div className="relative ml-auto max-w-[310px] lg:ml-0">
             <Palette className="text-forest" size={42} strokeWidth={1.2} />
             <h3 className="display mt-8 text-4xl font-semibold">Mandala Classes</h3>
@@ -230,7 +186,7 @@ function FlavoursSection() {
   return (
     <section className="bg-porcelain py-8">
       <SectionTitle title="Basque Cheesecake Flavours" zh="巴斯克乳酪蛋糕口味" />
-      <div className="mx-auto mt-9 grid w-[min(1340px,calc(100%-36px))] gap-8 md:grid-cols-3">
+      <div className="container-shell mt-9 grid gap-8 md:grid-cols-3">
         {products.map((product) => {
           const details = flavourDetails.find((item) => item.id === product.id) ?? flavourDetails[0];
           return (
@@ -266,10 +222,33 @@ function FlavoursSection() {
 }
 
 function AvailabilitySection() {
+  const [orderingData, setOrderingData] = useState<CakeOrderingData>(() => getDemoCakeOrderingData());
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadAvailability() {
+      try {
+        const response = await fetch("/api/cake-availability", { cache: "no-store" });
+        if (!response.ok) return;
+        const data = (await response.json()) as CakeOrderingData;
+        if (!cancelled && data.dates.length > 0) setOrderingData(data);
+      } catch {
+        // Keep the demo fallback when live availability cannot be fetched.
+      }
+    }
+    loadAvailability();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const availabilityCards = orderingData.dates.slice(0, 4);
+  const pickupLocations = Array.from(new Set(availabilityCards.flatMap((date) => date.slots.map((slot) => slot.locationName))));
+
   return (
     <section className="relative overflow-hidden bg-[#fbf5ed] py-10">
       <div className="absolute -left-8 top-10 hidden h-56 w-32 rounded-full border border-sage/35 md:block" />
-      <div className="mx-auto grid w-[min(1340px,calc(100%-36px))] gap-8 lg:grid-cols-[1fr_240px]">
+      <div className="container-shell grid gap-8 lg:grid-cols-[1fr_240px]">
         <div>
           <div className="flex items-start justify-between gap-6">
             <div>
@@ -282,29 +261,29 @@ function AvailabilitySection() {
           </div>
           <div className="mt-7 grid gap-3 md:grid-cols-4">
             {availabilityCards.map((card) => (
-              <article key={`${card.date}-${card.month}`} className="rounded-lg border border-sage/55 bg-porcelain p-5 shadow-sm">
+              <article key={card.id} className="rounded-lg border border-sage/55 bg-porcelain p-5 shadow-sm">
                 <div className="flex items-start gap-4">
                   <div className="text-center font-serif">
                     <p className="text-sm">{card.day}</p>
-                    <p className="text-3xl font-semibold">{card.date}</p>
+                    <p className="text-3xl font-semibold">{card.serviceDate.split("-")[2]}</p>
                     <p className="text-sm">{card.month}</p>
                   </div>
                   <div className="pt-1 text-sm leading-6">
-                    <p className="font-semibold">{card.locations}</p>
-                    <p className="tracking-[0.08em] text-cocoa/70">{card.zh}</p>
-                    <p className="mt-1 text-xs">8:30am - 3:00pm</p>
+                    <p className="font-semibold">{card.slots.length} {card.slots.length === 1 ? "location" : "locations"}</p>
+                    <p className="tracking-[0.08em] text-cocoa/70">多個取貨地點</p>
+                    <p className="mt-1 text-xs">{card.slots[0]?.label ?? "Pickup to be confirmed"}</p>
                   </div>
                 </div>
                 <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-cocoa/14">
-                  <div className="h-full rounded-full bg-forest" style={{ width: `${card.soldOut ? 100 : (card.remaining / card.capacity) * 100}%` }} />
+                  <div className="h-full rounded-full bg-forest" style={{ width: `${card.capacityUnits === 0 ? 100 : ((card.capacityUnits - card.remainingUnits) / card.capacityUnits) * 100}%` }} />
                 </div>
                 <p className="mt-3 text-sm">
-                  {card.soldOut ? "Sold out" : `${card.remaining} / ${card.capacity} cakes left`}
-                  <span className="block tracking-[0.08em] text-cocoa/70">{card.soldOut ? "已售完" : `尚餘 ${card.remaining} / ${card.capacity} 個蛋糕`}</span>
+                  {card.soldOut ? "Sold out" : `${card.remainingUnits} / ${card.capacityUnits} cakes left`}
+                  <span className="block tracking-[0.08em] text-cocoa/70">{card.soldOut ? "已售完" : `尚餘 ${card.remainingUnits} / ${card.capacityUnits} 個蛋糕`}</span>
                 </p>
-                <Link href="/cakes" className={`focus-ring mt-5 inline-flex min-h-10 w-full items-center justify-center rounded-md border text-sm font-semibold ${card.soldOut ? "border-caramel/45 text-cocoa" : "border-forest bg-forest text-white hover:bg-cocoa"}`}>
-                  {card.soldOut ? "Join waitlist" : "Order now"}
-                  <span className="ml-2 tracking-[0.12em]">{card.soldOut ? "加入候補名單" : "立即訂購"}</span>
+                <Link href={`/cakes?date=${card.serviceDate}`} className={`focus-ring mt-5 inline-flex min-h-10 w-full items-center justify-center rounded-md border text-sm font-semibold ${card.soldOut ? "border-caramel/45 text-cocoa" : "border-forest bg-forest text-white hover:bg-cocoa"}`}>
+                  {card.soldOut ? "View date" : "Order now"}
+                  <span className="ml-2 tracking-[0.12em]">{card.soldOut ? "查看日期" : "立即訂購"}</span>
                 </Link>
               </article>
             ))}
@@ -318,7 +297,7 @@ function AvailabilitySection() {
           <h3 className="font-serif text-xl font-semibold">Pickup locations</h3>
           <p className="mt-1 tracking-[0.12em]">取貨地點</p>
           <div className="mt-6 space-y-5 text-sm">
-            {["Park Ridge", "Calamvale", "Sunnybank"].map((location) => (
+            {(pickupLocations.length > 0 ? pickupLocations : ["Park Ridge", "Sunnybank"]).map((location) => (
               <div key={location} className="flex gap-3">
                 <MapPin className="mt-0.5 text-caramel" size={18} strokeWidth={1.4} />
                 <p>
@@ -341,7 +320,7 @@ function MandalaSection() {
   return (
     <section className="relative overflow-hidden bg-blush/70">
       <div className="absolute -right-16 -top-20 h-80 w-80 rounded-full border border-white/60 mandala-dots opacity-50" />
-      <div className="mx-auto grid w-[min(1410px,calc(100%-36px))] items-center gap-8 py-10 lg:grid-cols-[390px_1fr_260px]">
+      <div className="container-shell grid items-center gap-8 py-10 lg:grid-cols-[390px_1fr_260px]">
         <div className="relative h-[245px] overflow-hidden rounded-r-[80px] lg:rounded-none lg:rounded-r-[120px]">
           <Image src="/assets/mandala-class.jpg" alt="Mandala drawing class with dot painting tools" fill sizes="(max-width: 1024px) 100vw, 380px" className="object-cover" style={{ objectPosition: "44% 52%" }} />
         </div>
@@ -385,7 +364,7 @@ function MandalaSection() {
 function ValuesSection() {
   return (
     <section className="bg-porcelain py-9">
-      <div className="mx-auto grid w-[min(1120px,calc(100%-36px))] gap-6 md:grid-cols-4">
+      <div className="container-shell grid gap-6 md:grid-cols-4">
         {values.map((value, index) => {
           const Icon = value.icon;
           return (
@@ -405,41 +384,43 @@ function ValuesSection() {
 
 function BottomInfoSection() {
   return (
-    <section className="grid border-t border-cocoa/10 bg-[#fbf2ea] lg:grid-cols-3">
-      <div className="p-10 lg:pl-[max(40px,calc((100vw-1340px)/2))]">
-        <h2 className="font-serif text-2xl font-semibold">FAQ</h2>
-        <p className="tracking-[0.12em]">常見問題</p>
-        <div className="mt-6 overflow-hidden rounded-lg border border-blush bg-porcelain">
-          {faqs.map((faq) => (
-            <Link key={faq} href="/faq" className="focus-ring flex items-center justify-between border-b border-blush px-4 py-3 text-sm last:border-b-0 hover:bg-white">
-              <span>{faq}</span>
-              <ChevronRight size={16} className="text-caramel" />
-            </Link>
-          ))}
+    <section className="border-t border-cocoa/10 bg-[#fbf2ea]">
+      <div className="container-shell grid lg:grid-cols-3">
+        <div className="p-10">
+          <h2 className="font-serif text-2xl font-semibold">FAQ</h2>
+          <p className="tracking-[0.12em]">常見問題</p>
+          <div className="mt-6 overflow-hidden rounded-lg border border-blush bg-porcelain">
+            {faqs.map((faq) => (
+              <Link key={faq} href="/faq" className="focus-ring flex items-center justify-between border-b border-blush px-4 py-3 text-sm last:border-b-0 hover:bg-white">
+                <span>{faq}</span>
+                <ChevronRight size={16} className="text-caramel" />
+              </Link>
+            ))}
+          </div>
+          <Link href="/faq" className="focus-ring mt-6 inline-flex items-center text-sm font-semibold text-forest">
+            View all FAQs <ChevronRight size={16} />
+            <span className="ml-4 tracking-[0.12em]">查看全部常見問題</span>
+          </Link>
         </div>
-        <Link href="/faq" className="focus-ring mt-6 inline-flex items-center text-sm font-semibold text-forest">
-          View all FAQs <ChevronRight size={16} />
-          <span className="ml-4 tracking-[0.12em]">查看全部常見問題</span>
-        </Link>
-      </div>
-      <div className="bg-blush/55 p-10 text-center">
-        <h2 className="font-serif text-2xl font-semibold">About Debbie</h2>
-        <p className="tracking-[0.12em]">關於 Debbie</p>
-        <Image src="/assets/logo.jpg" alt="Debbie Dessert logo" width={170} height={170} className="mx-auto mt-6 rounded-sm object-cover mix-blend-multiply" />
-        <div className="mt-6 flex justify-center gap-4 text-cocoa">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cocoa/35"><Camera size={17} /></span>
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cocoa/35"><Heart size={17} /></span>
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cocoa/35"><Mail size={17} /></span>
+        <div className="bg-blush/55 p-10 text-center">
+          <h2 className="font-serif text-2xl font-semibold">About Debbie</h2>
+          <p className="tracking-[0.12em]">關於 Debbie</p>
+          <Image src="/assets/logo.jpg" alt="Debbie Dessert logo" width={170} height={170} className="mx-auto mt-6 rounded-sm object-cover mix-blend-multiply" />
+          <div className="mt-6 flex justify-center gap-4 text-cocoa">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cocoa/35"><Camera size={17} /></span>
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cocoa/35"><Heart size={17} /></span>
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cocoa/35"><Mail size={17} /></span>
+          </div>
         </div>
-      </div>
-      <div className="p-10 lg:pr-[max(40px,calc((100vw-1340px)/2))]">
-        <h2 className="font-serif text-2xl font-semibold">Contact</h2>
-        <p className="tracking-[0.12em]">聯絡我們</p>
-        <div className="mt-6 space-y-4 text-sm leading-6">
-          <p className="flex gap-3"><Clock className="mt-1 text-forest" size={17} />0423 456 789</p>
-          <p className="flex gap-3"><Mail className="mt-1 text-forest" size={17} />hello@debbiedessert.com.au</p>
-          <p className="flex gap-3"><MapPin className="mt-1 text-forest" size={17} />Brisbane, QLD 布里斯本，昆士蘭</p>
-          <p className="pt-2 text-cocoa/70">Response time 回覆時間<br />Usually within 1-2 business days 通常 1-2 個工作天內回覆</p>
+        <div className="p-10">
+          <h2 className="font-serif text-2xl font-semibold">Contact</h2>
+          <p className="tracking-[0.12em]">聯絡我們</p>
+          <div className="mt-6 space-y-4 text-sm leading-6">
+            <p className="flex gap-3"><Clock className="mt-1 text-forest" size={17} />0423 456 789</p>
+            <p className="flex gap-3"><Mail className="mt-1 text-forest" size={17} />hello@debbiedessert.com.au</p>
+            <p className="flex gap-3"><MapPin className="mt-1 text-forest" size={17} />Brisbane, QLD 布里斯本，昆士蘭</p>
+            <p className="pt-2 text-cocoa/70">Response time 回覆時間<br />Usually within 1-2 business days 通常 1-2 個工作天內回覆</p>
+          </div>
         </div>
       </div>
     </section>
@@ -449,7 +430,7 @@ function BottomInfoSection() {
 function HomeFooter() {
   return (
     <footer className="bg-forest text-porcelain">
-      <div className="mx-auto flex w-[min(1340px,calc(100%-36px))] flex-col gap-4 py-5 text-xs md:flex-row md:items-center md:justify-between">
+      <div className="container-shell flex flex-col gap-4 py-5 text-xs md:flex-row md:items-center md:justify-between">
         <p>© 2026 Debbie Dessert 甜品療癒師. All rights reserved.</p>
         <div className="flex flex-wrap gap-8">
           <Link href="/faq" className="focus-ring hover:text-blush">Privacy Policy 隱私政策</Link>

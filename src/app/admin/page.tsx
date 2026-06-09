@@ -46,7 +46,7 @@ export default async function AdminPage() {
           {[
             [CakeSlice, "Cakes due 20 Jun", totalCakes, "8 capacity remaining"],
             [Palette, "Next class", "5 booked", "3 seats remaining"],
-            [CircleDollarSign, "Awaiting payment", 1, "Cake checkout"],
+            [CircleDollarSign, "Pending confirmation", 1, "Manual cake orders"],
             [AlertCircle, "Needs attention", 2, "1 refund · 1 failed email"],
           ].map(([Icon, label, value, note]) => {
             const Component = Icon as typeof CakeSlice;
@@ -56,7 +56,7 @@ export default async function AdminPage() {
 
         <div className="mt-8 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <section className="rounded-2xl border border-black/8 bg-white">
-            <div className="flex items-center justify-between border-b border-black/8 p-5"><div><h2 className="font-semibold">Production list · 20 June</h2><p className="mt-1 text-xs text-black/45">Confirmed paid orders only</p></div><button className="text-sm font-semibold text-forest">Print list</button></div>
+            <div className="flex items-center justify-between border-b border-black/8 p-5"><div><h2 className="font-semibold">Production list · 20 June</h2><p className="mt-1 text-xs text-black/45">Confirmed manual orders only</p></div><button className="text-sm font-semibold text-forest">Print list</button></div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[540px] text-left text-sm">
                 <thead className="bg-black/[0.025] text-xs text-black/45"><tr><th className="px-5 py-3 font-medium">Flavour</th><th className="px-5 py-3 font-medium">Size</th><th className="px-5 py-3 font-medium">Quantity</th><th className="px-5 py-3 font-medium">Progress</th></tr></thead>
@@ -78,11 +78,11 @@ export default async function AdminPage() {
         </div>
 
         <section className="mt-6 rounded-2xl border border-black/8 bg-white">
-          <div className="flex items-center justify-between border-b border-black/8 p-5"><div><h2 className="font-semibold">Recent cake orders</h2><p className="mt-1 text-xs text-black/45">Payment and fulfilment are tracked separately</p></div><button className="text-sm font-semibold text-forest">View all</button></div>
+          <div className="flex items-center justify-between border-b border-black/8 p-5"><div><h2 className="font-semibold">Recent cake orders</h2><p className="mt-1 text-xs text-black/45">Manual confirmation and fulfilment are tracked separately</p></div><button className="text-sm font-semibold text-forest">View all</button></div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
               <thead className="bg-black/[0.025] text-xs text-black/45"><tr>{["Order", "Customer", "Date", "Items", "Pickup", "Status", ""].map((heading) => <th key={heading} className="px-5 py-3 font-medium">{heading}</th>)}</tr></thead>
-              <tbody className="divide-y divide-black/8">{adminOrders.map((order) => <tr key={order.id}><td className="px-5 py-4 font-semibold">{order.id}</td><td className="px-5 py-4">{order.customer}</td><td className="px-5 py-4">{order.date}</td><td className="px-5 py-4">{order.items}</td><td className="px-5 py-4">{order.slot}</td><td className="px-5 py-4"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${order.status === "Awaiting payment" ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"}`}>{order.status}</span></td><td className="px-5 py-4"><ChevronRight size={17} /></td></tr>)}</tbody>
+              <tbody className="divide-y divide-black/8">{adminOrders.map((order) => <tr key={order.id}><td className="px-5 py-4 font-semibold">{order.id}</td><td className="px-5 py-4">{order.customer}</td><td className="px-5 py-4">{order.date}</td><td className="px-5 py-4">{order.items}</td><td className="px-5 py-4">{order.slot}</td><td className="px-5 py-4"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${order.status === "Pending confirmation" ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"}`}>{order.status}</span></td><td className="px-5 py-4"><ChevronRight size={17} /></td></tr>)}</tbody>
             </table>
           </div>
         </section>
