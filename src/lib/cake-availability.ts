@@ -22,8 +22,6 @@ export type CakePickupSlotOption = {
   locationName: string;
   startsAt: string;
   endsAt: string;
-  capacityUnits: number | null;
-  remainingUnits: number | null;
 };
 
 export type CakeAvailabilityDateOption = {
@@ -124,8 +122,6 @@ export function getDemoCakeOrderingData(): CakeOrderingData {
           locationName: slot.label.split(" · ")[0] ?? slot.label,
           startsAt: "",
           endsAt: "",
-          capacityUnits: null,
-          remainingUnits: null,
         })),
       };
     }),
@@ -160,8 +156,6 @@ type LiveOrderingData = {
       locationName: string;
       startsAt: string;
       endsAt: string;
-      capacityUnits: number | null;
-      remainingUnits: number | null;
     }>;
   }>;
 };
@@ -206,8 +200,6 @@ export function normalizeLiveOrderingData(data: LiveOrderingData): CakeOrderingD
           locationName: slot.locationName,
           startsAt: slot.startsAt,
           endsAt: slot.endsAt,
-          capacityUnits: slot.capacityUnits,
-          remainingUnits: slot.remainingUnits,
         })),
       };
     }),

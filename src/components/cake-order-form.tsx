@@ -74,10 +74,8 @@ export function CakeOrderForm() {
     [orderingData.products, quantities],
   );
   const remainingUnits = selectedDate?.remainingUnits;
-  const slotRemainingUnits = selectedSlot?.remainingUnits;
   const isOverDateCapacity = typeof remainingUnits === "number" && totalQuantity > remainingUnits;
-  const isOverSlotCapacity = typeof slotRemainingUnits === "number" && totalQuantity > slotRemainingUnits;
-  const canAttemptSubmit = !isOverDateCapacity && !isOverSlotCapacity && submitState.status !== "submitting";
+  const canAttemptSubmit = !isOverDateCapacity && submitState.status !== "submitting";
 
   function clearFormError(key: FormErrorKey) {
     setFormErrors((current) => {
@@ -236,15 +234,12 @@ export function CakeOrderForm() {
         <fieldset id="slot-fieldset" tabIndex={-1} aria-describedby={formErrors.slot ? "slot-error" : undefined} className="rounded-2xl border border-cocoa/12 bg-white p-6 outline-none md:p-8">
           <legend className="display px-2 text-3xl font-semibold">3. {language === "en" ? "Pickup location" : "取貨地點"} <span className="text-red-700" aria-hidden="true">*</span></legend>
           <div className="mt-5 grid gap-3">
-            {!selectedDate ? <p className="text-sm text-cocoa/55">{language === "en" ? "Choose a pickup date first." : "請先選擇取貨日期。"}</p> : selectedDate.slots.map((slot) => {
-              const slotFull = typeof slot.remainingUnits === "number" && slot.remainingUnits <= 0;
-              return (
-                <label key={slot.id} className={`focus-within:ring-caramel flex cursor-pointer items-center justify-between rounded-xl border p-5 focus-within:ring-2 ${slotId === slot.id ? "border-forest bg-forest/5" : "border-cocoa/15"} ${slotFull ? "opacity-60" : ""}`}>
-                  <span><span className="font-medium">{slot.label}</span>{typeof slot.remainingUnits === "number" ? <span className="mt-1 block text-sm text-cocoa/55">{slotFull ? "Full" : `${slot.remainingUnits} cakes left in this slot`}</span> : null}</span>
-                  <input type="radio" name="slot" value={slot.id} required disabled={slotFull} checked={slotId === slot.id} onChange={() => { setSlotId(slot.id); clearFormError("slot"); }} className="size-5 accent-forest" />
-                </label>
-              );
-            })}
+            {!selectedDate ? <p className="text-sm text-cocoa/55">{language === "en" ? "Choose a pickup date first." : "請先選擇取貨日期。"}</p> : selectedDate.slots.map((slot) => (
+              <label key={slot.id} className={`focus-within:ring-caramel flex cursor-pointer items-center justify-between rounded-xl border p-5 focus-within:ring-2 ${slotId === slot.id ? "border-forest bg-forest/5" : "border-cocoa/15"}`}>
+                <span className="font-medium">{slot.label}</span>
+                <input type="radio" name="slot" value={slot.id} required checked={slotId === slot.id} onChange={() => { setSlotId(slot.id); clearFormError("slot"); }} className="size-5 accent-forest" />
+              </label>
+            ))}
           </div>
           {formErrors.slot ? <p id="slot-error" role="alert" className="mt-4 text-sm font-semibold text-red-700">{formErrors.slot}</p> : null}
         </fieldset>
@@ -272,7 +267,6 @@ export function CakeOrderForm() {
         </div>
         <div className="flex justify-between py-5 text-lg font-semibold"><span>Total</span><span>${total} AUD</span></div>
         {isOverDateCapacity ? <p role="alert" className="mb-4 rounded-lg bg-red-100 p-3 text-sm text-red-900">Only {remainingUnits} cakes remain for this date.</p> : null}
-        {isOverSlotCapacity ? <p role="alert" className="mb-4 rounded-lg bg-red-100 p-3 text-sm text-red-900">Only {slotRemainingUnits} cakes remain for this pickup slot.</p> : null}
         {submitState.status === "error" ? <p role="alert" className="mb-4 rounded-lg bg-red-100 p-3 text-sm text-red-900">{submitState.message}</p> : null}
         <label className="flex gap-3 text-xs leading-5 text-porcelain/70"><input required name="terms" type="checkbox" aria-invalid={Boolean(formErrors.terms)} aria-describedby={formErrors.terms ? "terms-error" : undefined} onChange={() => clearFormError("terms")} className="mt-1 size-4 accent-blush" /><span>I accept the pickup, allergen, change and cancellation terms. <span className="text-blush" aria-hidden="true">*</span></span></label>
         {formErrors.terms ? <p id="terms-error" role="alert" className="mt-3 rounded-lg bg-red-100 p-3 text-sm text-red-900">{formErrors.terms}</p> : null}

@@ -56,7 +56,6 @@ export type AdminAvailability = {
     address: string;
     startsAt: string;
     endsAt: string;
-    capacityUnits: number | null;
     active: boolean;
   }>;
 };
@@ -186,7 +185,7 @@ export async function getAdminAvailability() {
   const [{ data: dates, error }, { data: orders, error: ordersError }] = await Promise.all([
     supabase
       .from("cake_availability_dates")
-      .select("id, service_date, status, capacity_units, ordering_cutoff_at, customer_note_en, customer_note_zh, pickup_slots(id, location_name, address, starts_at, ends_at, capacity_units, active)")
+      .select("id, service_date, status, capacity_units, ordering_cutoff_at, customer_note_en, customer_note_zh, pickup_slots(id, location_name, address, starts_at, ends_at, active)")
       .order("service_date", { ascending: true }),
     supabase
       .from("cake_orders")
@@ -216,7 +215,6 @@ export async function getAdminAvailability() {
       address: slot.address,
       startsAt: slot.starts_at,
       endsAt: slot.ends_at,
-      capacityUnits: slot.capacity_units,
       active: slot.active,
     })),
   } satisfies AdminAvailability));

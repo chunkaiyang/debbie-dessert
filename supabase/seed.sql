@@ -31,8 +31,8 @@ on conflict (service_date) do update set
   capacity_units = excluded.capacity_units,
   ordering_cutoff_at = excluded.ordering_cutoff_at;
 
-insert into public.pickup_slots(availability_date_id, location_name, address, starts_at, ends_at, capacity_units)
-select id, 'Park Ridge', 'Address supplied with confirmation', service_date + time '10:00', service_date + time '11:00', 8
+insert into public.pickup_slots(availability_date_id, location_name, address, starts_at, ends_at)
+select id, 'Park Ridge', 'Address supplied with confirmation', service_date + time '10:00', service_date + time '11:00'
 from public.cake_availability_dates d
 where d.service_date in ('2026-06-20', '2026-06-27')
   and not exists (
@@ -40,7 +40,7 @@ where d.service_date in ('2026-06-20', '2026-06-27')
     where ps.availability_date_id = d.id and ps.location_name = 'Park Ridge'
   )
 union all
-select id, 'Sunnybank', 'Address supplied with confirmation', service_date + time '14:00', service_date + time '15:00', 8
+select id, 'Sunnybank', 'Address supplied with confirmation', service_date + time '14:00', service_date + time '15:00'
 from public.cake_availability_dates d
 where d.service_date in ('2026-06-20', '2026-06-27')
   and not exists (

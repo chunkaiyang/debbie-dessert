@@ -43,7 +43,6 @@ const slotSchema = z.object({
   address: z.string().trim().min(2),
   startsAt: z.iso.datetime({ local: true }),
   endsAt: z.iso.datetime({ local: true }),
-  capacityUnits: z.string(),
   active: z.boolean(),
 });
 
@@ -68,7 +67,6 @@ export async function saveCakeAvailability(formData: FormData) {
       address: String(formData.get(`slot-${index}-address`) ?? ""),
       startsAt: String(formData.get(`slot-${index}-starts`) ?? ""),
       endsAt: String(formData.get(`slot-${index}-ends`) ?? ""),
-      capacityUnits: String(formData.get(`slot-${index}-capacity`) ?? ""),
       active: formData.get(`slot-${index}-active`) === "on",
     }];
   });
@@ -94,7 +92,6 @@ export async function saveCakeAvailability(formData: FormData) {
         id: slot.id || null,
         startsAt: `${slot.startsAt}:00+10:00`,
         endsAt: `${slot.endsAt}:00+10:00`,
-        capacityUnits: slot.capacityUnits || null,
       })),
     },
   });

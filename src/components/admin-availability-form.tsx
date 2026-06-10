@@ -87,10 +87,9 @@ function PickupSlotFields({
           className="min-h-10 w-full min-w-0 rounded-lg border border-black/15 px-3 text-sm font-normal"
         />
       </label>
-      <label className="grid min-w-0 gap-1 text-xs font-semibold xl:col-span-3">Starts<input required={index === 0} type="datetime-local" name={`slot-${index}-starts`} defaultValue={localDateTime(slot?.startsAt)} className="min-h-10 w-full min-w-0 rounded-lg border border-black/15 px-2 text-sm font-normal" /></label>
-      <label className="grid min-w-0 gap-1 text-xs font-semibold xl:col-span-3">Ends<input required={index === 0} type="datetime-local" name={`slot-${index}-ends`} defaultValue={localDateTime(slot?.endsAt)} className="min-h-10 w-full min-w-0 rounded-lg border border-black/15 px-2 text-sm font-normal" /></label>
-      <label className="grid min-w-0 gap-1 text-xs font-semibold xl:col-span-3">Capacity<input type="number" min="0" name={`slot-${index}-capacity`} defaultValue={slot?.capacityUnits ?? ""} placeholder="Unlimited" className="min-h-10 w-full min-w-0 rounded-lg border border-black/15 px-3 text-sm font-normal" /></label>
-      <label className="flex min-w-0 items-center gap-2 text-sm font-semibold xl:col-span-3"><input type="checkbox" name={`slot-${index}-active`} defaultChecked={slot?.active ?? true} /> Active</label>
+      <label className="grid min-w-0 gap-1 text-xs font-semibold xl:col-span-4">Starts<input required={index === 0} type="datetime-local" name={`slot-${index}-starts`} defaultValue={localDateTime(slot?.startsAt)} className="min-h-10 w-full min-w-0 rounded-lg border border-black/15 px-2 text-sm font-normal" /></label>
+      <label className="grid min-w-0 gap-1 text-xs font-semibold xl:col-span-4">Ends<input required={index === 0} type="datetime-local" name={`slot-${index}-ends`} defaultValue={localDateTime(slot?.endsAt)} className="min-h-10 w-full min-w-0 rounded-lg border border-black/15 px-2 text-sm font-normal" /></label>
+      <label className="flex min-w-0 items-center gap-2 text-sm font-semibold xl:col-span-4"><input type="checkbox" name={`slot-${index}-active`} defaultChecked={slot?.active ?? true} /> Active</label>
     </fieldset>
   );
 }
