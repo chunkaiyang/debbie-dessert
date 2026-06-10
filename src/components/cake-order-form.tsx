@@ -75,6 +75,8 @@ export function CakeOrderForm() {
   );
   const remainingUnits = selectedDate?.remainingUnits;
   const isOverDateCapacity = typeof remainingUnits === "number" && totalQuantity > remainingUnits;
+  const availableToAdd = typeof remainingUnits === "number" ? Math.max(remainingUnits - totalQuantity, 0) : 0;
+  const isAtDateCapacity = Boolean(selectedDate) && availableToAdd === 0;
   const canAttemptSubmit = !isOverDateCapacity && submitState.status !== "submitting";
 
   function clearFormError(key: FormErrorKey) {
@@ -87,11 +89,37 @@ export function CakeOrderForm() {
   }
 
   function updateQuantity(slug: string, delta: number) {
-    setQuantities((current) => ({
-      ...current,
-      [slug]: Math.max(0, Math.min(6, (current[slug] ?? 0) + delta)),
-    }));
+    if (!selectedDate) return;
+    setQuantities((current) => {
+      const currentTotal = Object.values(current).reduce((sum, quantity) => sum + quantity, 0);
+      const currentQuantity = current[slug] ?? 0;
+      const nextQuantity = Math.max(0, Math.min(6, currentQuantity + delta));
+      const nextTotal = currentTotal - currentQuantity + nextQuantity;
+
+      if (delta > 0 && nextTotal > selectedDate.remainingUnits) return current;
+      return { ...current, [slug]: nextQuantity };
+    });
     clearFormError("flavours");
+  }
+
+  function selectDate(nextDateId: string) {
+    setDateId(nextDateId);
+    setSlotId("");
+    setQuantities(createInitialQuantities(orderingData));
+    clearFormError("date");
+    clearFormError("slot");
+    clearFormError("flavours");
+  }
+
+  async function refreshAvailability() {
+    try {
+      const response = await fetch("/api/cake-availability", { cache: "no-store" });
+      if (!response.ok) return;
+      const data = (await response.json()) as CakeOrderingData;
+      if (data.products.length > 0) setOrderingData(data);
+    } catch {
+      // Keep the current availability while showing the reservation error.
+    }
   }
 
   async function submitOrder(event: FormEvent<HTMLFormElement>) {
@@ -117,7 +145,7 @@ export function CakeOrderForm() {
     if (!termsAccepted) errors.terms = language === "en" ? "You must accept the pickup, allergen, change and cancellation terms." : "您必須接受取貨、過敏原、更改及取消條款。";
 
     setFormErrors(errors);
-    const firstError = (["flavours", "date", "slot", "name", "phone", "email", "terms"] as const).find((key) => errors[key]);
+    const firstError = (["date", "flavours", "slot", "name", "phone", "email", "terms"] as const).find((key) => errors[key]);
     if (firstError) {
       const selector = firstError === "flavours"
         ? "#flavours-fieldset"
@@ -165,6 +193,7 @@ export function CakeOrderForm() {
       });
     } catch (error) {
       setSubmitState({ status: "error", message: error instanceof Error ? error.message : "Could not reserve this order." });
+      await refreshAvailability();
     }
   }
 
@@ -198,37 +227,71 @@ export function CakeOrderForm() {
   return (
     <form className="grid gap-8 lg:grid-cols-[1fr_380px]" noValidate onSubmit={submitOrder}>
       <div className="space-y-8">
-        <fieldset id="flavours-fieldset" tabIndex={-1} aria-describedby={formErrors.flavours ? "flavours-error" : undefined} className="rounded-2xl border border-cocoa/12 bg-white p-6 outline-none md:p-8">
-          <legend className="display px-2 text-3xl font-semibold">1. {language === "en" ? "Choose flavours" : "選擇口味"} <span className="text-red-700" aria-hidden="true">*</span></legend>
-          <div className="mt-5 divide-y divide-cocoa/10">
-            {orderingData.products.map((product) => (
-              <div key={product.slug} className="flex items-center justify-between gap-4 py-5">
-                <div>
-                  <p className="font-semibold">{t(product.name)} <span className="font-normal text-cocoa/45">· ${product.priceCents / 100}</span></p>
-                  <p className="mt-1 text-sm text-cocoa/55">{language === "en" ? product.name.zh : product.name.en}</p>
-                </div>
-                <div className="flex items-center rounded-full border border-cocoa/20">
-                  <button type="button" aria-label={`Remove ${product.name.en}`} className="focus-ring flex size-11 items-center justify-center rounded-full" onClick={() => updateQuantity(product.slug, -1)}><Minus size={16} /></button>
-                  <output className="w-8 text-center font-semibold">{quantities[product.slug] ?? 0}</output>
-                  <button type="button" aria-label={`Add ${product.name.en}`} className="focus-ring flex size-11 items-center justify-center rounded-full" onClick={() => updateQuantity(product.slug, 1)}><Plus size={16} /></button>
-                </div>
-              </div>
-            ))}
-          </div>
-          {formErrors.flavours ? <p id="flavours-error" role="alert" className="mt-4 text-sm font-semibold text-red-700">{formErrors.flavours}</p> : null}
-        </fieldset>
-
         <fieldset id="date-fieldset" tabIndex={-1} aria-describedby={formErrors.date ? "date-error" : undefined} className="rounded-2xl border border-cocoa/12 bg-white p-6 outline-none md:p-8">
-          <legend className="display px-2 text-3xl font-semibold">2. {language === "en" ? "Pickup date" : "取貨日期"} <span className="text-red-700" aria-hidden="true">*</span></legend>
+          <legend className="display px-2 text-3xl font-semibold">1. {language === "en" ? "Pickup date" : "取貨日期"} <span className="text-red-700" aria-hidden="true">*</span></legend>
           <div className="mt-5 grid gap-3">
             {orderingData.dates.map((date) => (
               <label key={date.id} className={`focus-within:ring-caramel flex cursor-pointer items-center justify-between rounded-xl border p-5 focus-within:ring-2 ${dateId === date.id ? "border-forest bg-forest/5" : "border-cocoa/15"} ${date.soldOut ? "opacity-60" : ""}`}>
-                <span><span className="font-semibold">{language === "en" ? date.date : date.dateZh}</span><span className="mt-1 block text-sm text-cocoa/55">{date.soldOut ? "Sold out" : `${date.remainingUnits} ${language === "en" ? "cakes remaining" : "個名額"}`}</span></span>
-                <input type="radio" name="date" value={date.id} required disabled={date.soldOut} checked={dateId === date.id} onChange={() => { setDateId(date.id); setSlotId(""); clearFormError("date"); clearFormError("slot"); }} className="size-5 accent-forest" />
+                <span>
+                  <span className="font-semibold">{language === "en" ? date.date : date.dateZh}</span>
+                  <span className="mt-1 block text-sm text-cocoa/55">
+                    {date.soldOut
+                      ? (language === "en" ? "Sold out" : "已售完")
+                      : language === "en"
+                        ? `${date.remainingUnits} ${date.remainingUnits === 1 ? "cake" : "cakes"} remaining`
+                        : `${date.remainingUnits} 個蛋糕名額`}
+                  </span>
+                </span>
+                <input type="radio" name="date" value={date.id} required disabled={date.soldOut} checked={dateId === date.id} onChange={() => selectDate(date.id)} className="size-5 accent-forest" />
               </label>
             ))}
           </div>
           {formErrors.date ? <p id="date-error" role="alert" className="mt-4 text-sm font-semibold text-red-700">{formErrors.date}</p> : null}
+        </fieldset>
+
+        <fieldset id="flavours-fieldset" tabIndex={-1} aria-describedby={formErrors.flavours ? "flavours-error" : "cake-capacity-status"} className="rounded-2xl border border-cocoa/12 bg-white p-6 outline-none md:p-8">
+          <legend className="display px-2 text-3xl font-semibold">2. {language === "en" ? "Choose flavours" : "選擇口味"} <span className="text-red-700" aria-hidden="true">*</span></legend>
+          <div id="cake-capacity-status" aria-live="polite" aria-atomic="true" className={`mt-5 rounded-xl p-4 ${selectedDate ? "bg-forest/8 text-forest" : "bg-cocoa/5 text-cocoa/65"}`}>
+            {!selectedDate ? (
+              <p className="font-semibold">{language === "en" ? "Choose a pickup date to see cake availability." : "請先選擇取貨日期以查看蛋糕名額。"}</p>
+            ) : (
+              <>
+                <p className="font-semibold">
+                  {language === "en"
+                    ? `Your order: ${totalQuantity === 0 ? "No cakes selected" : `${totalQuantity} ${totalQuantity === 1 ? "cake" : "cakes"}`}`
+                    : `您的訂單：${totalQuantity === 0 ? "尚未選擇蛋糕" : `已選 ${totalQuantity} 個蛋糕`}`}
+                </p>
+                <p className="mt-1 text-sm opacity-75">
+                  {isAtDateCapacity
+                    ? (language === "en" ? "You've selected the maximum available for this date." : "您已選滿此日期所有可訂蛋糕。")
+                    : language === "en"
+                      ? `Date availability: ${availableToAdd} ${availableToAdd === 1 ? "cake" : "cakes"} remaining`
+                      : `此取貨日期：尚餘 ${availableToAdd} 個蛋糕名額`}
+                </p>
+              </>
+            )}
+          </div>
+          <div className="mt-5 divide-y divide-cocoa/10">
+            {orderingData.products.map((product) => {
+              const productQuantity = quantities[product.slug] ?? 0;
+              const cannotAdd = !selectedDate || isAtDateCapacity || productQuantity >= 6;
+              const cannotRemove = !selectedDate || productQuantity === 0;
+              return (
+                <div key={product.slug} className="flex items-center justify-between gap-4 py-5">
+                  <div>
+                    <p className="font-semibold">{t(product.name)} <span className="font-normal text-cocoa/45">· ${product.priceCents / 100}</span></p>
+                    <p className="mt-1 text-sm text-cocoa/55">{language === "en" ? product.name.zh : product.name.en}</p>
+                  </div>
+                  <div className="flex items-center rounded-full border border-cocoa/20">
+                    <button type="button" disabled={cannotRemove} aria-label={`Remove ${product.name.en}`} className="focus-ring flex size-11 items-center justify-center rounded-full disabled:cursor-not-allowed disabled:opacity-35" onClick={() => updateQuantity(product.slug, -1)}><Minus size={16} /></button>
+                    <output className="w-8 text-center font-semibold" aria-label={`${product.name.en} quantity`}>{productQuantity}</output>
+                    <button type="button" disabled={cannotAdd} aria-label={`Add ${product.name.en}`} className="focus-ring flex size-11 items-center justify-center rounded-full disabled:cursor-not-allowed disabled:opacity-35" onClick={() => updateQuantity(product.slug, 1)}><Plus size={16} /></button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {formErrors.flavours ? <p id="flavours-error" role="alert" className="mt-4 text-sm font-semibold text-red-700">{formErrors.flavours}</p> : null}
         </fieldset>
 
         <fieldset id="slot-fieldset" tabIndex={-1} aria-describedby={formErrors.slot ? "slot-error" : undefined} className="rounded-2xl border border-cocoa/12 bg-white p-6 outline-none md:p-8">
@@ -268,9 +331,9 @@ export function CakeOrderForm() {
         <div className="flex justify-between py-5 text-lg font-semibold"><span>Total</span><span>${total} AUD</span></div>
         {isOverDateCapacity ? <p role="alert" className="mb-4 rounded-lg bg-red-100 p-3 text-sm text-red-900">Only {remainingUnits} cakes remain for this date.</p> : null}
         {submitState.status === "error" ? <p role="alert" className="mb-4 rounded-lg bg-red-100 p-3 text-sm text-red-900">{submitState.message}</p> : null}
-        <label className="flex gap-3 text-xs leading-5 text-porcelain/70"><input required name="terms" type="checkbox" aria-invalid={Boolean(formErrors.terms)} aria-describedby={formErrors.terms ? "terms-error" : undefined} onChange={() => clearFormError("terms")} className="mt-1 size-4 accent-blush" /><span>I accept the pickup, allergen, change and cancellation terms. <span className="text-blush" aria-hidden="true">*</span></span></label>
+        <label className="flex cursor-pointer gap-3 text-xs leading-5 text-porcelain/70"><input required name="terms" type="checkbox" aria-invalid={Boolean(formErrors.terms)} aria-describedby={formErrors.terms ? "terms-error" : undefined} onChange={() => clearFormError("terms")} className="mt-1 size-4 cursor-pointer accent-blush" /><span>I accept the pickup, allergen, change and cancellation terms. <span className="text-blush" aria-hidden="true">*</span></span></label>
         {formErrors.terms ? <p id="terms-error" role="alert" className="mt-3 rounded-lg bg-red-100 p-3 text-sm text-red-900">{formErrors.terms}</p> : null}
-        <button disabled={!canAttemptSubmit} className="focus-ring mt-6 flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-blush px-5 font-semibold text-cocoa disabled:cursor-not-allowed disabled:opacity-50">
+        <button disabled={!canAttemptSubmit} className="focus-ring mt-6 flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-blush px-5 font-semibold text-cocoa shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-porcelain hover:shadow-md disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-50 disabled:shadow-none">
           {submitState.status === "submitting" ? "Reserving..." : "Request confirmation"} <ChevronRight size={18} />
         </button>
         <p className="mt-4 flex items-center gap-2 text-xs text-porcelain/60"><ShieldCheck size={15} /> Debbie confirms availability and payment details manually.</p>
