@@ -30,6 +30,7 @@ export function AdminShell({ ownerEmail, children }: { ownerEmail: string; child
             </span>
           </Link>
           <nav className="order-3 flex w-full flex-wrap items-center gap-1 border-t border-black/8 pt-3 text-sm font-semibold lg:order-none lg:w-auto lg:border-0 lg:pt-0">
+            <Link className="rounded-full px-3 py-2 hover:bg-black/5" href="/admin">Dashboard</Link>
             <Link className="rounded-full px-3 py-2 hover:bg-black/5" href="/admin/orders">Orders</Link>
             <Link className="rounded-full px-3 py-2 hover:bg-black/5" href="/admin/availability">Availability</Link>
             <Link className="rounded-full px-3 py-2 hover:bg-black/5" href="/admin/flavours">Flavours</Link>
@@ -60,7 +61,7 @@ export function StatusBadge({ value }: { value: string }) {
   const warm = ["pending_confirmation", "unpaid", "pending", "failed"].includes(value);
   const muted = ["cancelled", "refunded", "closed", "cancelled"].includes(value);
   return (
-    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${muted ? "bg-black/10 text-black/60" : warm ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"}`}>
+    <span className={`inline-flex shrink-0 self-start items-center rounded-full px-3 py-1 text-xs font-semibold ${muted ? "bg-black/10 text-black/60" : warm ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"}`}>
       {value.replaceAll("_", " ")}
     </span>
   );

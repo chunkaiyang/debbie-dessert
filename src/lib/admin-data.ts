@@ -87,6 +87,19 @@ export type AdminProduct = {
   variantActive: boolean;
 };
 
+export type AdminProductionDate = {
+  id: string;
+  serviceDate: string;
+  orderingCutoffAt: string;
+  orderingState: "taking_orders" | "ordering_closed" | "draft";
+  items: Array<{
+    flavour: string;
+    confirmedQuantity: number;
+    pendingQuantity: number;
+    potentialQuantity: number;
+  }>;
+};
+
 async function requireOwnerClient() {
   const session = await getOwnerSession();
   if (!session.ok) redirect("/admin/login");
@@ -281,13 +294,55 @@ export async function getAdminDashboardData() {
     getAdminAvailability(),
     getAdminProducts(),
   ]);
-  const nextDate = availability.find((date) => date.status === "published" && date.serviceDate >= new Date().toISOString().slice(0, 10));
-  const productionOrders = allOrders.filter((order) => nextDate && order.serviceDate === nextDate.serviceDate && ["confirmed", "in_production", "ready"].includes(order.status));
-  const production = new Map<string, number>();
-  for (const order of productionOrders) {
-    for (const item of order.items) production.set(item.name, (production.get(item.name) ?? 0) + item.quantity);
-  }
-  return { orders: allOrders.slice(0, 6), allOrders, availability, products, nextDate, production: Array.from(production, ([flavour, quantity]) => ({ flavour, quantity })) };
+  const now = new Date();
+  const todayInBrisbane = new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "Australia/Brisbane",
+  }).format(now);
+  const nextDate = availability.find((date) => date.status === "published" && date.serviceDate >= todayInBrisbane);
+  const confirmedStatuses = new Set(["confirmed", "in_production", "ready"]);
+  const upcomingDates = availability
+    .filter((date) => date.status !== "cancelled" && date.serviceDate >= todayInBrisbane)
+    .sort((a, b) => a.serviceDate.localeCompare(b.serviceDate));
+  const production: AdminProductionDate[] = upcomingDates.map((availabilityDate) => {
+    const quantities = new Map<string, { confirmedQuantity: number; pendingQuantity: number }>();
+    const dateOrders = allOrders.filter((order) => order.serviceDate === availabilityDate.serviceDate);
+
+    for (const order of dateOrders) {
+      const isConfirmed = confirmedStatuses.has(order.status);
+      const isPending = order.status === "pending_confirmation";
+      if (!isConfirmed && !isPending) continue;
+
+      for (const item of order.items) {
+        const current = quantities.get(item.name) ?? { confirmedQuantity: 0, pendingQuantity: 0 };
+        if (isConfirmed) current.confirmedQuantity += item.quantity;
+        if (isPending) current.pendingQuantity += item.quantity;
+        quantities.set(item.name, current);
+      }
+    }
+
+    const orderingState = availabilityDate.status === "draft"
+      ? "draft"
+      : availabilityDate.status === "published" && new Date(availabilityDate.orderingCutoffAt) > now
+        ? "taking_orders"
+        : "ordering_closed";
+
+    return {
+      id: availabilityDate.id,
+      serviceDate: availabilityDate.serviceDate,
+      orderingCutoffAt: availabilityDate.orderingCutoffAt,
+      orderingState,
+      items: Array.from(quantities, ([flavour, quantity]) => ({
+        flavour,
+        ...quantity,
+        potentialQuantity: quantity.confirmedQuantity + quantity.pendingQuantity,
+      })).sort((a, b) => a.flavour.localeCompare(b.flavour)),
+    };
+  });
+
+  return { orders: allOrders.slice(0, 6), allOrders, availability, products, nextDate, production };
 }
 
 export async function getOwnerForAction() {
