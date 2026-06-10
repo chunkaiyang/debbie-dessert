@@ -24,6 +24,13 @@ All exposed tables use RLS. Public mutations are limited to the two atomic reser
 
 The `/admin` dashboard is fail-closed: it does not show order, production, or class details unless Supabase is configured, the visitor is signed in, and `public.is_owner()` returns true. In local development without Supabase env vars, `/admin` redirects to `/admin/login?error=setup`.
 
+Owner operations are backed by live Supabase data:
+
+- `/admin/orders` manages order, payment and fulfilment statuses and exports filtered CSV history.
+- `/admin/availability` creates and publishes cake dates, capacity and pickup windows.
+- `/admin/flavours` manages bilingual cake details, pricing, display order and Storage-backed images.
+- Owner mutations are validated in Server Actions and protected again by RLS/RPC owner checks.
+
 ## Cake confirmation, payments and email
 
 Cake ordering currently uses a manual-confirmation flow:

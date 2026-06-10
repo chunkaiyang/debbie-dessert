@@ -48,7 +48,7 @@ export function CakeOrderForm() {
         const response = await fetch("/api/cake-availability", { cache: "no-store" });
         if (!response.ok) return;
         const data = (await response.json()) as CakeOrderingData;
-        if (cancelled || data.products.length === 0 || data.dates.length === 0) return;
+        if (cancelled || data.products.length === 0) return;
 
         const initialDate = getInitialDate(data);
         setOrderingData(data);

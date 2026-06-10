@@ -1,12 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import type { User } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 export function isSupabaseConfigured() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
 }
 
-export async function getSupabaseServerClient() {
+export const getSupabaseServerClient = cache(async () => {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !key) return null;
@@ -24,13 +25,13 @@ export async function getSupabaseServerClient() {
       },
     },
   });
-}
+});
 
 export type OwnerSession =
   | { ok: true; user: User }
   | { ok: false; reason: "not_configured" | "not_signed_in" | "not_owner" | "auth_error" };
 
-export async function getOwnerSession(): Promise<OwnerSession> {
+export const getOwnerSession = cache(async (): Promise<OwnerSession> => {
   const supabase = await getSupabaseServerClient();
   if (!supabase) return { ok: false, reason: "not_configured" };
 
@@ -47,4 +48,4 @@ export async function getOwnerSession(): Promise<OwnerSession> {
   if (!isOwner) return { ok: false, reason: "not_owner" };
 
   return { ok: true, user };
-}
+});

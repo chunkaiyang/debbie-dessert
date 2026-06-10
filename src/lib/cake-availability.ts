@@ -11,6 +11,9 @@ export type CakeProductOption = {
   imagePosition: string;
   ingredients: string;
   allergens: string;
+  displayOrder: number;
+  homepageNotesEn: string[];
+  homepageNotesZh: string[];
 };
 
 export type CakePickupSlotOption = {
@@ -87,7 +90,7 @@ function formatSlotLabel(locationName: string, startsAt: string, endsAt: string)
 export function getDemoCakeOrderingData(): CakeOrderingData {
   return {
     mode: "demo",
-    products: products.map((product) => ({
+    products: products.map((product, index) => ({
       id: product.id,
       slug: product.id,
       variantId: product.id,
@@ -98,6 +101,9 @@ export function getDemoCakeOrderingData(): CakeOrderingData {
       imagePosition: product.imagePosition,
       ingredients: product.ingredients,
       allergens: product.allergens,
+      displayOrder: index * 10,
+      homepageNotesEn: [],
+      homepageNotesZh: [],
     })),
     dates: cakeDates.map((date) => {
       const parts = formatDateParts(date.id);
@@ -139,6 +145,9 @@ type LiveOrderingData = {
     imagePath: string | null;
     ingredientsEn: string;
     allergensEn: string;
+    displayOrder?: number;
+    homepageNotesEn?: string[];
+    homepageNotesZh?: string[];
   }>;
   dates?: Array<{
     id: string;
@@ -173,8 +182,11 @@ export function normalizeLiveOrderingData(data: LiveOrderingData): CakeOrderingD
         imagePosition: fallback?.imagePosition ?? "50% 50%",
         ingredients: product.ingredientsEn,
         allergens: product.allergensEn,
+        displayOrder: product.displayOrder ?? 0,
+        homepageNotesEn: product.homepageNotesEn ?? [],
+        homepageNotesZh: product.homepageNotesZh ?? [],
       };
-    }),
+    }).sort((a, b) => a.displayOrder - b.displayOrder),
     dates: (data.dates ?? []).map((date) => {
       const parts = formatDateParts(date.serviceDate);
       return {

@@ -17,7 +17,7 @@ import {
   Users,
 } from "lucide-react";
 import { Header } from "@/components/header";
-import { classSessions, products } from "@/lib/site-data";
+import { classSessions } from "@/lib/site-data";
 import type { CakeOrderingData } from "@/lib/cake-availability";
 import { getDemoCakeOrderingData } from "@/lib/cake-availability";
 
@@ -183,22 +183,46 @@ function PathwaysSection() {
 }
 
 function FlavoursSection() {
+  const [orderingData, setOrderingData] = useState<CakeOrderingData>(() => getDemoCakeOrderingData());
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadProducts() {
+      try {
+        const response = await fetch("/api/cake-availability", { cache: "no-store" });
+        if (!response.ok) return;
+        const data = (await response.json()) as CakeOrderingData;
+        if (!cancelled && data.products.length > 0) setOrderingData(data);
+      } catch {
+        // Keep the local catalogue only when live catalogue data is unavailable.
+      }
+    }
+    loadProducts();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section className="bg-porcelain py-8">
       <SectionTitle title="Basque Cheesecake Flavours" zh="巴斯克乳酪蛋糕口味" />
       <div className="container-shell mt-9 grid gap-8 md:grid-cols-3">
-        {products.map((product) => {
-          const details = flavourDetails.find((item) => item.id === product.id) ?? flavourDetails[0];
+        {orderingData.products.map((product) => {
+          const details = flavourDetails.find((item) => item.id === product.slug);
+          const notes = Array.from({ length: 3 }, (_, index) => [
+            product.homepageNotesEn[index] ?? product.description.en,
+            product.homepageNotesZh[index] ?? product.description.zh,
+          ]);
           return (
             <article key={product.id} className="overflow-hidden rounded-lg border border-blush bg-porcelain shadow-[0_10px_26px_rgba(75,48,34,0.04)]">
               <div className="relative h-[245px] overflow-hidden bg-white">
-                <Image src={details.image} alt={`${product.name.en} Basque cheesecake slice`} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" style={{ objectPosition: details.imagePosition }} />
+                <Image src={product.image || details?.image || "/assets/menu.jpg"} alt={`${product.name.en} Basque cheesecake slice`} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" style={{ objectPosition: details?.imagePosition ?? product.imagePosition }} />
                 <div className="absolute left-5 top-4 rounded-full bg-caramel px-5 py-2 text-sm font-semibold tracking-[0.12em] text-white">{product.name.zh}</div>
-                <div className="absolute left-[150px] top-5 font-serif text-2xl italic text-cocoa/80">{details.script}</div>
+                <div className="absolute left-[150px] top-5 font-serif text-2xl italic text-cocoa/80">{details?.script ?? product.name.en}</div>
               </div>
               <div className="grid grid-cols-3 border-y border-blush/80 bg-porcelain">
-                {details.notes.map(([en, zh], index) => (
-                  <div key={en} className="border-r border-blush/70 px-3 py-4 text-center last:border-r-0">
+                {notes.map(([en, zh], index) => (
+                  <div key={`${en}-${index}`} className="border-r border-blush/70 px-3 py-4 text-center last:border-r-0">
                     {index === 0 ? <Leaf className="mx-auto text-caramel" size={22} strokeWidth={1.2} /> : index === 1 ? <CakeSlice className="mx-auto text-caramel" size={22} strokeWidth={1.2} /> : <Heart className="mx-auto text-caramel" size={22} strokeWidth={1.2} />}
                     <p className="mt-2 text-xs tracking-[0.08em]">{zh}</p>
                     <p className="mt-1 text-[11px] text-cocoa/65">{en}</p>
@@ -206,7 +230,7 @@ function FlavoursSection() {
                 ))}
               </div>
               <p className="py-4 text-center font-serif text-xl">
-                From ${product.price} <span className="text-sm">起</span>
+                From ${product.priceCents / 100} <span className="text-sm">起</span>
               </p>
             </article>
           );
