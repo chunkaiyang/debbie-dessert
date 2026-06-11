@@ -1,6 +1,4 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -19,7 +17,7 @@ import {
 import { Header } from "@/components/header";
 import { classSessions } from "@/lib/site-data";
 import type { CakeOrderingData } from "@/lib/cake-availability";
-import { getDemoCakeOrderingData } from "@/lib/cake-availability";
+import { getCakeOrderingData } from "@/lib/cake-availability-server";
 
 const flavourDetails = [
   {
@@ -78,8 +76,9 @@ export default function HomePage() {
       <main>
         <HeroSection />
         <PathwaysSection />
-        <FlavoursSection />
-        <AvailabilitySection />
+        <Suspense fallback={<CakeSectionsLoading />}>
+          <CakeSections />
+        </Suspense>
         <MandalaSection />
         <ValuesSection />
         <BottomInfoSection />
@@ -182,27 +181,18 @@ function PathwaysSection() {
   );
 }
 
-function FlavoursSection() {
-  const [orderingData, setOrderingData] = useState<CakeOrderingData>(() => getDemoCakeOrderingData());
+async function CakeSections() {
+  const orderingData = await getCakeOrderingData();
 
-  useEffect(() => {
-    let cancelled = false;
-    async function loadProducts() {
-      try {
-        const response = await fetch("/api/cake-availability", { cache: "no-store" });
-        if (!response.ok) return;
-        const data = (await response.json()) as CakeOrderingData;
-        if (!cancelled && data.products.length > 0) setOrderingData(data);
-      } catch {
-        // Keep the local catalogue only when live catalogue data is unavailable.
-      }
-    }
-    loadProducts();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  return (
+    <>
+      <FlavoursSection orderingData={orderingData} />
+      <AvailabilitySection orderingData={orderingData} />
+    </>
+  );
+}
 
+function FlavoursSection({ orderingData }: { orderingData: CakeOrderingData }) {
   return (
     <section className="bg-porcelain py-8">
       <SectionTitle title="Basque Cheesecake Flavours" zh="巴斯克乳酪蛋糕口味" />
@@ -245,27 +235,7 @@ function FlavoursSection() {
   );
 }
 
-function AvailabilitySection() {
-  const [orderingData, setOrderingData] = useState<CakeOrderingData>(() => getDemoCakeOrderingData());
-
-  useEffect(() => {
-    let cancelled = false;
-    async function loadAvailability() {
-      try {
-        const response = await fetch("/api/cake-availability", { cache: "no-store" });
-        if (!response.ok) return;
-        const data = (await response.json()) as CakeOrderingData;
-        if (!cancelled && data.dates.length > 0) setOrderingData(data);
-      } catch {
-        // Keep the demo fallback when live availability cannot be fetched.
-      }
-    }
-    loadAvailability();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+function AvailabilitySection({ orderingData }: { orderingData: CakeOrderingData }) {
   const availabilityCards = orderingData.dates.slice(0, 4);
   const pickupLocations = Array.from(new Set(availabilityCards.flatMap((date) => date.slots.map((slot) => slot.locationName))));
 
@@ -335,6 +305,86 @@ function AvailabilitySection() {
         </aside>
       </div>
     </section>
+  );
+}
+
+function CakeSectionsLoading() {
+  return (
+    <div aria-busy="true" aria-live="polite">
+      <span className="sr-only">Loading current cake flavours and availability.</span>
+      <section className="bg-porcelain py-8">
+        <SectionTitle title="Basque Cheesecake Flavours" zh="巴斯克乳酪蛋糕口味" />
+        <div className="container-shell mt-9 grid gap-8 md:grid-cols-3">
+          {Array.from({ length: 3 }, (_, index) => (
+            <div
+              key={index}
+              className="h-[394px] animate-pulse rounded-lg border border-blush bg-white/60 shadow-[0_10px_26px_rgba(75,48,34,0.04)] motion-reduce:animate-none"
+              aria-hidden="true"
+            >
+              <div className="h-[245px] rounded-t-lg bg-blush/45" />
+              <div className="grid h-[96px] grid-cols-3 gap-px bg-blush/55">
+                {Array.from({ length: 3 }, (_, noteIndex) => (
+                  <div key={noteIndex} className="bg-porcelain p-4">
+                    <div className="mx-auto h-5 w-5 rounded-full bg-caramel/20" />
+                    <div className="mx-auto mt-3 h-2.5 w-14 rounded-full bg-cocoa/10" />
+                    <div className="mx-auto mt-2 h-2 w-10 rounded-full bg-cocoa/10" />
+                  </div>
+                ))}
+              </div>
+              <div className="mx-auto mt-6 h-4 w-24 rounded-full bg-cocoa/10" />
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 flex justify-center">
+          <div className="h-10 w-56 animate-pulse rounded-md bg-caramel/15 motion-reduce:animate-none" aria-hidden="true" />
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden bg-[#fbf5ed] py-10">
+        <div className="container-shell grid gap-8 lg:grid-cols-[1fr_240px]">
+          <div>
+            <div>
+              <h2 className="display text-3xl font-semibold">Upcoming Cake Availability</h2>
+              <p className="mt-1 text-lg tracking-[0.1em]">近期可預訂日期</p>
+            </div>
+            <div className="mt-7 grid gap-3 md:grid-cols-4">
+              {Array.from({ length: 4 }, (_, index) => (
+                <div
+                  key={index}
+                  className="h-[258px] animate-pulse rounded-lg border border-sage/55 bg-porcelain p-5 shadow-sm motion-reduce:animate-none"
+                  aria-hidden="true"
+                >
+                  <div className="flex gap-4">
+                    <div className="h-16 w-11 rounded-md bg-sage/20" />
+                    <div className="flex-1 space-y-3 pt-1">
+                      <div className="h-3 w-20 rounded-full bg-cocoa/10" />
+                      <div className="h-3 w-24 rounded-full bg-cocoa/10" />
+                      <div className="h-2.5 w-full rounded-full bg-cocoa/10" />
+                    </div>
+                  </div>
+                  <div className="mt-6 h-1.5 rounded-full bg-cocoa/10" />
+                  <div className="mt-4 h-3 w-24 rounded-full bg-cocoa/10" />
+                  <div className="mt-2 h-3 w-28 rounded-full bg-cocoa/10" />
+                  <div className="mt-5 h-10 rounded-md bg-forest/15" />
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 h-3 w-full max-w-xl animate-pulse rounded-full bg-cocoa/10 motion-reduce:animate-none" aria-hidden="true" />
+          </div>
+          <aside
+            className="h-[258px] animate-pulse rounded-lg border border-blush bg-porcelain p-6 motion-reduce:animate-none"
+            aria-hidden="true"
+          >
+            <div className="h-5 w-32 rounded-full bg-cocoa/10" />
+            <div className="mt-3 h-3 w-20 rounded-full bg-cocoa/10" />
+            <div className="mt-8 space-y-6">
+              <div className="h-9 rounded-md bg-blush/55" />
+              <div className="h-9 rounded-md bg-blush/55" />
+            </div>
+          </aside>
+        </div>
+      </section>
+    </div>
   );
 }
 
