@@ -207,8 +207,10 @@ function FlavoursSection({ orderingData }: { orderingData: CakeOrderingData }) {
             <article key={product.id} className="overflow-hidden rounded-lg border border-blush bg-porcelain shadow-[0_10px_26px_rgba(75,48,34,0.04)]">
               <div className="relative h-[245px] overflow-hidden bg-white">
                 <Image src={product.image || details?.image || "/assets/menu.jpg"} alt={`${product.name.en} Basque cheesecake slice`} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" style={{ objectPosition: details?.imagePosition ?? product.imagePosition }} />
-                <div className="absolute left-5 top-4 rounded-full bg-caramel px-5 py-2 text-sm font-semibold tracking-[0.12em] text-white">{product.name.zh}</div>
-                <div className="absolute left-[150px] top-5 font-serif text-2xl italic text-cocoa/80">{details?.script ?? product.name.en}</div>
+                <div className="absolute left-5 top-4 rounded-2xl bg-caramel px-5 py-2.5 text-white shadow-sm">
+                  <span className="block text-sm leading-tight font-semibold tracking-[0.12em]">{product.name.zh}</span>
+                  <span className="mt-1 block font-serif text-base leading-none italic tracking-normal">{details?.script ?? product.name.en}</span>
+                </div>
               </div>
               <div className="grid grid-cols-3 border-y border-blush/80 bg-porcelain">
                 {notes.map(([en, zh], index) => (
