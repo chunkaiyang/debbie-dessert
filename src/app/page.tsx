@@ -92,10 +92,10 @@ function HeroSection() {
   return (
     <section className="relative overflow-hidden border-b border-cocoa/10">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_42%,rgba(232,206,193,0.5),transparent_34%),linear-gradient(90deg,#fff9f3_0%,#fff9f3_42%,#f8efe7_100%)]" />
-      <div className="container-shell relative grid min-h-[690px] items-center gap-10 py-14 lg:grid-cols-[0.87fr_1.13fr]">
+      <div className="container-shell relative grid min-h-[690px] items-center gap-10 py-14 lg:grid-cols-[1fr_1fr]">
         <div className="relative z-10 max-w-[650px]">
-          <h1 className="display text-[clamp(3.8rem,6.1vw,6.35rem)] font-semibold leading-[0.96] tracking-[-0.045em] text-cocoa">
-            Healing through
+          <h1 className="display text-[clamp(3.8rem,6.1vw,6.35rem)] font-semibold leading-[0.96] tracking-[-0.045em] text-cocoa lg:text-[clamp(3.8rem,5.5vw,5.5rem)]">
+            <span className="lg:whitespace-nowrap">Healing through</span>
             <br />
             dessert
           </h1>
